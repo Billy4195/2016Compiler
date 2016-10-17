@@ -42,7 +42,7 @@ digit [0-9]
     buf[0] = '\0';
     BEGIN 0;
 }
-<Cpp_comm>. |
+<Cpp_comm>.* |
 <C_comm>.   {
     LIST;
 }
