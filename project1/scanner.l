@@ -10,8 +10,12 @@ int Opt_Statistic = 1;
 int linenum = 1;
 char buf[MAX_LINE_LENGTH];
 %}
-
+%S C_comm Cpp_comm
 %%
+"//" {
+    LIST;
+    BEGIN Cpp_comm;
+}
 "(" {
     tokenString("delim", "("); 
 }
@@ -22,8 +26,12 @@ char buf[MAX_LINE_LENGTH];
         printf("%d:%s\n", linenum, buf);
     ++linenum;
     buf[0] = '\0';
+    BEGIN 0;
 }
-
+<Cpp_comm>. |
+<C_comm>.   {
+    LIST;
+}
 . { // Unrecognized character
     fprintf(stderr, "Error at line %d: %s\n", linenum, yytext);
     exit(1);
