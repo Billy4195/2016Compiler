@@ -11,13 +11,27 @@ int linenum = 1;
 char buf[MAX_LINE_LENGTH];
 %}
 %S C_comm Cpp_comm
+keyword while|do|if|else|true|false|for|int|print|const|read|boolean|bool|void|float|double|string|continue|break|return
+whitespace [ \t]
+delimiter ,|;|\(|\)|\[|\]|\{|\}
+letter [a-zA-Z]+
+digit [0-9]
 %%
+{keyword} {
+    tokenString("KW", yytext);
+}
+{letter}({letter}|{digit})* {
+    tokenString("id", yytext);
+}
+{whitespace} {
+    LIST;
+}
 "//" {
     LIST;
     BEGIN Cpp_comm;
 }
-"(" {
-    tokenString("delim", "("); 
+{delimiter} {
+    tokenString("delim", yytext); 
 }
 
 \n {
