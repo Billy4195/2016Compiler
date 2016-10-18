@@ -1,6 +1,6 @@
 %{
 #define LIST                { strncat(buf, yytext, sizeof(buf) - strlen(buf) - 1); }
-#define token(t)            { LIST; if (Opt_Token) printf("<%s>\n", #t); }
+#define token(t)            { LIST; if (Opt_Token) printf("<%s>\n", t); }
 #define tokenString(t, s)   { LIST; if (Opt_Token) printf("<%s:%s>\n", t, s); }
 #define MAX_LINE_LENGTH 257
 #define MAX_ID_LENGTH 257
@@ -11,6 +11,7 @@ int Opt_Statistic = 1;
 int linenum = 1;
 char buf[MAX_LINE_LENGTH];
 char str_buf[MAX_LINE_LENGTH];
+char op[5];
 %}
 %S C_comm Cpp_comm STRING
 keyword while|do|if|else|true|false|for|int|print|const|read|boolean|bool|void|float|double|string|continue|break|return
@@ -18,6 +19,10 @@ whitespace [ \t]
 delimiter ,|;|\(|\)|\[|\]|\{|\}
 letter [a-zA-Z]+
 digit [0-9]
+operator \+|-|\*|\/|%|=|<|<=|!=|>=|>|==|&&|\|\||!
+integer -?0|[1-9][0-9]*
+float -?[0-9]*\.[0-9]*
+scientific -?[0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 %%
 {keyword} {
     tokenString("KW", yytext);
@@ -50,13 +55,25 @@ digit [0-9]
 }
 \" {
     LIST;
-    printf("string start\n");
     BEGIN STRING;
 }
 <STRING>[^"]* {
     LIST_STR;
-    printf("STR %s\n",yytext);
     LIST;
+}
+{operator} {
+    sprintf(op,"\"%s\"",yytext);
+    token(op);
+    op[0] = '\0';
+}
+{scientific} {
+    tokenString("scientific",yytext);
+}
+{integer} {
+    tokenString("integer",yytext);
+}
+{float} {
+    tokenString("float",yytext);
 }
 <Cpp_comm>.* |
 <C_comm>.   {
