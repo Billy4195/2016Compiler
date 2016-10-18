@@ -4,13 +4,15 @@
 #define tokenString(t, s)   { LIST; if (Opt_Token) printf("<%s:%s>\n", t, s); }
 #define MAX_LINE_LENGTH 257
 #define MAX_ID_LENGTH 257
+#define LIST_STR            { strncat(str_buf, yytext, sizeof(str_buf) - strlen(str_buf) -1); }
 int Opt_Source = 1;
 int Opt_Token = 1;
 int Opt_Statistic = 1;
 int linenum = 1;
 char buf[MAX_LINE_LENGTH];
+char str_buf[MAX_LINE_LENGTH];
 %}
-%S C_comm Cpp_comm
+%S C_comm Cpp_comm STRING
 keyword while|do|if|else|true|false|for|int|print|const|read|boolean|bool|void|float|double|string|continue|break|return
 whitespace [ \t]
 delimiter ,|;|\(|\)|\[|\]|\{|\}
@@ -41,6 +43,20 @@ digit [0-9]
     ++linenum;
     buf[0] = '\0';
     BEGIN 0;
+}
+<STRING>"\"" {
+    tokenString("string", str_buf);
+    BEGIN 0;
+}
+\" {
+    LIST;
+    printf("string start\n");
+    BEGIN STRING;
+}
+<STRING>[^"]* {
+    LIST_STR;
+    printf("STR %s\n",yytext);
+    LIST;
 }
 <Cpp_comm>.* |
 <C_comm>.   {
