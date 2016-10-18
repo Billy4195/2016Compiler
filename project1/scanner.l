@@ -37,6 +37,18 @@ scientific -?[0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 {keyword} {
     tokenString("KW", yytext);
 }
+<STRING>"\"" {
+    tokenString("string", str_buf);
+    BEGIN 0;
+}
+\" {
+    LIST;
+    BEGIN STRING;
+}
+<STRING>[^"]* {
+    LIST_STR;
+    LIST;
+}
 {letter}({letter}|{digit})* {
     tokenString("id", yytext);
     int i;
@@ -103,18 +115,6 @@ scientific -?[0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
     ++linenum;
     buf[0] = '\0';
     BEGIN 0;
-}
-<STRING>"\"" {
-    tokenString("string", str_buf);
-    BEGIN 0;
-}
-\" {
-    LIST;
-    BEGIN STRING;
-}
-<STRING>[^"]* {
-    LIST_STR;
-    LIST;
 }
 {operator} {
     sprintf(op,"\"%s\"",yytext);
