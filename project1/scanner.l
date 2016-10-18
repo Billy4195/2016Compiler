@@ -30,9 +30,9 @@ delimiter ,|;|\(|\)|\[|\]|\{|\}
 letter [a-zA-Z]+
 digit [0-9]
 operator \+|-|\*|\/|%|=|<|<=|!=|>=|>|==|&&|\|\||!
-integer -?0|[1-9][0-9]*
-float -?[0-9]*\.[0-9]*
-scientific -?[0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
+integer 0|[1-9][0-9]*
+float [0-9]*\.[0-9]*
+scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 %%
 {keyword} {
     tokenString("KW", yytext);
