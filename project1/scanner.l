@@ -4,7 +4,7 @@
 #define tokenString(t, s)   { LIST; if (Opt_Token) printf("<%s:%s>\n", t, s); }
 #define MAX_LINE_LENGTH 257
 #define MAX_ID_LENGTH 257
-#define LIST_STR            { strncat(str_buf, yytext, sizeof(str_buf) - strlen(str_buf) -1); }
+#define LIST_STR(str)            { strncat(str_buf, str, sizeof(str_buf) - strlen(str_buf) -1); }
 typedef struct{
     char name[257];
     unsigned int count;
@@ -45,7 +45,7 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 <INITIAL>{keyword} {
     tokenString("KW", yytext);
 }
-<STRING>"\"" {
+<STRING>\" {
     tokenString("string", str_buf);
     BEGIN 0;
 }
@@ -53,8 +53,16 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
     LIST;
     BEGIN STRING;
 }
-<STRING>[^"]* {
-    LIST_STR;
+<STRING>[\\][\\] {
+    LIST_STR(yytext+1);
+    LIST;
+}
+<STRING>[\\][\"] {
+    LIST_STR(yytext+1);
+    LIST;
+}
+<STRING>[^"\\] {
+    LIST_STR(yytext);
     LIST;
 }
 <INITIAL>{letter}({letter}|{digit})* {
