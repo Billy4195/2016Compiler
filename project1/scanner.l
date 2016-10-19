@@ -47,6 +47,7 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 }
 <STRING>\" {
     tokenString("string", str_buf);
+    str_buf[0] = '\0';
     BEGIN 0;
 }
 <INITIAL>\" {
