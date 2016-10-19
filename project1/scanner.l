@@ -34,14 +34,22 @@ integer 0|[1-9][0-9]*
 float [0-9]*\.[0-9]*
 scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 %%
-{keyword} {
+<C_comm>"*/" {
+    LIST;
+    BEGIN 0;
+}
+<Cpp_comm>. |
+<C_comm>.   {
+    LIST;
+}
+<INITIAL>{keyword} {
     tokenString("KW", yytext);
 }
 <STRING>"\"" {
     tokenString("string", str_buf);
     BEGIN 0;
 }
-\" {
+<INITIAL>\" {
     LIST;
     BEGIN STRING;
 }
@@ -49,13 +57,12 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
     LIST_STR;
     LIST;
 }
-{letter}({letter}|{digit})* {
+<INITIAL>{letter}({letter}|{digit})* {
     tokenString("id", yytext);
     int i;
     char id_exist=0;
     for(i=0;i<ID_list.filled;i++){
         if(!strcmp(ID_list.list[i].name,yytext)){
-            printf("ID match %s\n",yytext);
             ID_list.list[i].count++;
             id_exist = 1;
         }
@@ -74,40 +81,50 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
         ID_list.filled++;
     }
 }
-{whitespace} {
+<INITIAL>{whitespace} {
     LIST;
 }
-"//" {
+<INITIAL>"//" {
     LIST;
     BEGIN Cpp_comm;
 }
-{delimiter} {
+<INITIAL>"/\*" {
+    LIST;
+    BEGIN C_comm;
+}
+<INITIAL>{delimiter} {
     tokenString("delim", yytext); 
 }
-#pragma\ statistic\ on {
+<INITIAL>#pragma\ statistic\ on {
     LIST;
     Opt_Statistic = 1;
 }
-#pragma\ statistic\ off {
+<INITIAL>#pragma\ statistic\ off {
     LIST;
     Opt_Statistic = 0;
 }
-#pragma\ source\ on {
+<INITIAL>#pragma\ source\ on {
     LIST;
     Opt_Source = 1;
 }
-#pragma\ source\ off {
+<INITIAL>#pragma\ source\ off {
     Opt_Source = 0;
 }
-#pragma\ token\ on {
+<INITIAL>#pragma\ token\ on {
     LIST;
     Opt_Token = 1;
 }
-#pragma\ token\ off {
+<INITIAL>#pragma\ token\ off {
     LIST;
     Opt_Token = 0;
 }
-
+<C_comm>\n {
+    LIST;
+    if (Opt_Source)
+        printf("%d:%s\n", linenum, buf);
+    ++linenum;
+    buf[0] = '\0';
+}
 \n {
     LIST;
     if (Opt_Source)
@@ -116,23 +133,19 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
     buf[0] = '\0';
     BEGIN 0;
 }
-{operator} {
+<INITIAL>{operator} {
     sprintf(op,"\"%s\"",yytext);
     token(op);
     op[0] = '\0';
 }
-{scientific} {
+<INITIAL>{scientific} {
     tokenString("scientific",yytext);
 }
-{integer} {
+<INITIAL>{integer} {
     tokenString("integer",yytext);
 }
-{float} {
+<INITIAL>{float} {
     tokenString("float",yytext);
-}
-<Cpp_comm>.* |
-<C_comm>.   {
-    LIST;
 }
 . { // Unrecognized character
     fprintf(stderr, "Error at line %d: %s\n", linenum, yytext);
