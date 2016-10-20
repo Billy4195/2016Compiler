@@ -23,7 +23,7 @@ char str_buf[MAX_LINE_LENGTH];
 char op[5];
 id_list ID_list;
 %}
-%S C_comm Cpp_comm STRING
+%S C_comm Cpp_comm STRING PRAGMA
 keyword while|do|if|else|true|false|for|int|print|const|read|boolean|bool|void|float|double|string|continue|break|return
 whitespace [ \t]
 delimiter ,|;|\(|\)|\[|\]|\{|\}
@@ -90,13 +90,16 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
         ID_list.filled++;
     }
 }
+<PRAGMA>{whitespace} |
 <INITIAL>{whitespace} {
     LIST;
 }
+<PRAGMA>"//" |
 <INITIAL>"//" {
     LIST;
     BEGIN Cpp_comm;
 }
+<PRAGMA>"/\*" |
 <INITIAL>"/\*" {
     LIST;
     BEGIN C_comm;
@@ -107,25 +110,31 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 <INITIAL>#pragma\ statistic\ on {
     LIST;
     Opt_Statistic = 1;
+    BEGIN PRAGMA;
 }
 <INITIAL>#pragma\ statistic\ off {
     LIST;
     Opt_Statistic = 0;
+    BEGIN PRAGMA;
 }
 <INITIAL>#pragma\ source\ on {
     LIST;
     Opt_Source = 1;
+    BEGIN PRAGMA;
 }
 <INITIAL>#pragma\ source\ off {
     Opt_Source = 0;
+    BEGIN PRAGMA;
 }
 <INITIAL>#pragma\ token\ on {
     LIST;
     Opt_Token = 1;
+    BEGIN PRAGMA;
 }
 <INITIAL>#pragma\ token\ off {
     LIST;
     Opt_Token = 0;
+    BEGIN PRAGMA;
 }
 <C_comm>\n {
     LIST;
@@ -140,7 +149,7 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
         printf("%d:%s\n", linenum, buf);
     ++linenum;
     buf[0] = '\0';
-    BEGIN 0;
+    BEGIN INITIAL;
 }
 <INITIAL>{operator} {
     sprintf(op,"\"%s\"",yytext);
