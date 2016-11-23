@@ -64,10 +64,10 @@ arg_list : arg_list arg
     ;
 
 id_decl_list : id_decl_list COMMA identifier
-             | id_decl_list COMMA id_assign_list
+             | id_decl_list COMMA id_assign
              | id_decl_list COMMA array_assign_list
              | identifier
-             | id_assign_list
+             | id_assign
              | array_assign_list
     ;
 
@@ -75,14 +75,19 @@ id_assign_list : id_assign_list COMMA id_assign
                | id_assign
     ;
 
-array_assign_list : identifier dim_list ASSIGN set
+array_assign_list : array ASSIGN set
+    ;
+
+array : identifier dim_list
     ;
 
 arg : type identifier
-    | type identifier dim_list
+    | type array 
     ;
 
-id_assign : identifier ASSIGN literal
+id_assign : array ASSIGN literal
+          | identifier ASSIGN literal
+          | array ASSIGN simple_statement
           | identifier ASSIGN simple_statement
     ;
 
@@ -143,10 +148,12 @@ compound_statement : L_BRACE var_const_decl_list statement_list  R_BRACE
                    | L_BRACE R_BRACE
     ;
 
-simple_statement : var_assign SEMICOLON
-                 | PRINT var_ref SEMICOLON
+simple_statement : id_assign SEMICOLON
+                 | PRINT array SEMICOLON
+                 | PRINT identifier SEMICOLON
                  | PRINT simple_statement SEMICOLON
-                 | READ var_ref SEMICOLON
+                 | READ array SEMICOLON
+                 | READ identifier SEMICOLON
                  | expression SEMICOLON
                  | funct_invocation SEMICOLON
     ;
@@ -172,14 +179,6 @@ for_statement : FOR L_PAREN set_expre SEMICOLON boolean_expression SEMICOLON set
 jump_statement : RETURN simple_statement SEMICOLON
                | BREAK SEMICOLON
                | CONTINUE SEMICOLON
-    ;
-
-var_ref : identifier dim_list
-        | identifier
-    ;
-
-var_assign : var_ref ASSIGN simple_statement
-           | id_assign
     ;
 
 expression : boolean_expression
@@ -209,7 +208,7 @@ arith_expression : set_expre PLUS set_expre
     ;
 
 set_expre : expression
-          | var_assign
+          | id_assign
           | funct_invocation
     ;
 
