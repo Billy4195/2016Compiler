@@ -15,7 +15,7 @@ extern char buf[256];           /* declared in lex.l */
 %left PLUS SUB MUL DIV MOD ASSIGN LT LE NE GE GT EQ AND OR
 %right NOT
 %token WHILE DO IF ELSE TRUE FALSE FOR PRINT CONST READ BOOLEAN BOOL VOID FLOAT DOUBLE STRING CONTINUE BREAK RETURN
-%token int float scien str
+%token int_ float_ scien str
 %%
 
 program : decl_and_def_list
@@ -85,10 +85,10 @@ arg : type identifier
     | type array 
     ;
 
-id_assign : array ASSIGN literal
+id_assign : array ASSIGN operand
           | identifier ASSIGN literal
-          | array ASSIGN simple_statement
-          | identifier ASSIGN simple_statement
+          | array ASSIGN expression
+          | identifier ASSIGN expression
     ;
 
 type : INT
@@ -107,13 +107,13 @@ literal : SUB num
     ;
 
 num : integer_const
-    | float
+    | float_
     | scien
     | TRUE
     | FALSE
     ;
 
-integer_const : int
+integer_const : int_
     ;
 
 dim_list : dim_list dim
@@ -122,12 +122,12 @@ dim_list : dim_list dim
 
 dim : L_BRACKET integer_const R_BRACKET
     | L_BRACKET identifier R_BRACKET
-    | L_BRACKET simple_statement R_BRACKET
+    | L_BRACKET expression R_BRACKET
     ;
 
-set : set L_BRACE simple_statement R_BRACE
+set : set L_BRACE expression R_BRACE
     | set L_BRACE literal R_BRACE
-    | L_BRACE simple_statement R_BRACE
+    | L_BRACE expression R_BRACE
     | L_BRACE literal R_BRACE
     ;
 
@@ -148,22 +148,20 @@ compound_statement : L_BRACE var_const_decl_list statement_list  R_BRACE
                    | L_BRACE R_BRACE
     ;
 
-simple_statement : id_assign SEMICOLON
+simple_statement : expression SEMICOLON
                  | PRINT array SEMICOLON
                  | PRINT identifier SEMICOLON
-                 | PRINT simple_statement SEMICOLON
+                 | PRINT expression SEMICOLON
                  | READ array SEMICOLON
                  | READ identifier SEMICOLON
-                 | expression SEMICOLON
-                 | funct_invocation SEMICOLON
     ;
 
 conditional_statement : IF L_PAREN boolean_expression R_PAREN compound_statement ELSE compound_statement
                       | IF L_PAREN boolean_expression R_PAREN compound_statement
     ;
 
-while_statement : WHILE L_PAREN boolean_expression R_PAREN compound_statement
-                | DO compound_statement WHILE L_PAREN boolean_expression R_PAREN SEMICOLON
+while_statement : WHILE L_PAREN operand R_PAREN compound_statement
+                | DO compound_statement WHILE L_PAREN operand R_PAREN SEMICOLON
     ;
 
 for_statement : FOR L_PAREN set_expre SEMICOLON boolean_expression SEMICOLON set_expre R_PAREN compound_statement
@@ -176,7 +174,7 @@ for_statement : FOR L_PAREN set_expre SEMICOLON boolean_expression SEMICOLON set
               | FOR L_PAREN SEMICOLON SEMICOLON R_PAREN compound_statement
     ;
 
-jump_statement : RETURN simple_statement SEMICOLON
+jump_statement : RETURN expression SEMICOLON
                | BREAK SEMICOLON
                | CONTINUE SEMICOLON
     ;
@@ -188,27 +186,32 @@ expression : boolean_expression
 funct_invocation : identifier L_PAREN expression_list R_PAREN 
     ;
 
-boolean_expression : set_expre OR set_expre
-                   | set_expre AND set_expre
-                   | NOT set_expre
-                   | set_expre LT set_expre
-                   | set_expre LE set_expre
-                   | set_expre EQ set_expre
-                   | set_expre GE set_expre
-                   | set_expre GT set_expre
-                   | set_expre NE set_expre
+boolean_expression : operand OR operand
+                   | operand AND operand
+                   | NOT operand
+                   | operand LT operand
+                   | operand LE operand
+                   | operand EQ operand
+                   | operand GE operand
+                   | operand GT operand
+                   | operand NE operand
+                   | L_PAREN boolean_expression R_PAREN
     ;
 
-arith_expression : set_expre PLUS set_expre
-                 | set_expre SUB set_expre
-                 | set_expre MUL set_expre
-                 | set_expre DIV set_expre
-                 | set_expre MOD set_expre
-                 | SUB set_expre %prec MOD
+arith_expression : operand PLUS operand
+                 | operand SUB operand
+                 | operand MUL operand
+                 | operand DIV operand
+                 | operand MOD operand
+                 | SUB operand %prec MOD
+                 | L_PAREN arith_expression R_PAREN
     ;
 
-set_expre : expression
-          | id_assign
+operand : set_expre
+        | identifier
+    ;
+
+set_expre : id_assign
           | funct_invocation
     ;
 

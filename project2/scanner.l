@@ -1,4 +1,5 @@
 %{
+#include "parser.tab.h"
 #define LIST                { strncat(buf, yytext, sizeof(buf) - strlen(buf) - 1); }
 #define token(t)            { LIST; if (Opt_Token) printf("<%s>\n", t); }
 #define tokenString(t, s)   { LIST; if (Opt_Token) printf("<%s:%s>\n", t, s); }
@@ -44,11 +45,53 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 }
 <INITIAL>{keyword} {
     tokenString("KW", yytext);
+    if( strcmp(yytext, "while") == 0){
+        return WHILE;
+    }else if( strcmp(yytext, "do") == 0){
+        return DO;
+    }else if( strcmp(yytext, "if") == 0){
+        return IF;
+    }else if( strcmp(yytext, "else") == 0){
+        return ELSE;
+    }else if( strcmp(yytext, "true") == 0){
+        return TRUE;
+    }else if( strcmp(yytext, "false") == 0){
+        return FALSE;
+    }else if( strcmp(yytext, "for") == 0){
+        return FOR;
+    }else if( strcmp(yytext, "int") == 0){
+        return INT;
+    }else if( strcmp(yytext, "print") == 0){
+        return PRINT;
+    }else if( strcmp(yytext, "const") == 0){
+        return CONST;
+    }else if( strcmp(yytext, "read") == 0){
+        return READ;
+    }else if( strcmp(yytext, "boolean") == 0){
+        return BOOLEAN;
+    }else if( strcmp(yytext, "bool") == 0){
+        return BOOL;
+    }else if( strcmp(yytext, "void") == 0){
+        return VOID;
+    }else if( strcmp(yytext, "float") == 0){
+        return FLOAT;
+    }else if( strcmp(yytext, "double") == 0){
+        return DOUBLE;
+    }else if( strcmp(yytext, "string") == 0){
+        return STRING;
+    }else if( strcmp(yytext, "continue") == 0){
+        return CONTINUE;
+    }else if( strcmp(yytext, "break") == 0){
+        return BREAK;
+    }else if( strcmp(yytext, "return") == 0){
+        return RETURN;
+    }
 }
 <STRING>\" {
     tokenString("string", str_buf);
     str_buf[0] = '\0';
     BEGIN 0;
+    return str;
 }
 <INITIAL>\" {
     LIST;
@@ -89,6 +132,7 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
         ID_list.list[ID_list.filled].count = 1;
         ID_list.filled++;
     }
+    return ID;
 }
 <PRAGMA>{whitespace} |
 <INITIAL>{whitespace} {
@@ -106,6 +150,24 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 }
 <INITIAL>{delimiter} {
     tokenString("delim", yytext); 
+    switch(*yytext){
+        case ',':
+            return COMMA;
+        case ';':
+            return SEMICOLON;
+        case '(':
+            return L_PAREN;
+        case ')':
+            return R_PAREN;
+        case '[':
+            return L_BRACKET;
+        case ']':
+            return R_BRACKET;
+        case '{':
+            return L_BRACE;
+        case '}':
+            return R_BRACE;
+    }
 }
 <INITIAL>#pragma\ statistic\ on {
     LIST;
@@ -155,15 +217,49 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
     sprintf(op,"\"%s\"",yytext);
     token(op);
     op[0] = '\0';
+    if( strcmp(yytext, "+") == 0){
+        return PLUS;
+    }else if( strcmp(yytext, "-") == 0){
+        return SUB;
+    }else if( strcmp(yytext, "*") == 0){
+        return MUL;
+    }else if( strcmp(yytext, "/") == 0){
+        return DIV;
+    }else if( strcmp(yytext, "%") == 0){
+        return MOD;
+    }else if( strcmp(yytext, "=") == 0){
+        return ASSIGN;
+    }else if( strcmp(yytext, "<") == 0){
+        return LT;
+    }else if( strcmp(yytext, "<=") == 0){
+        return LE;
+    }else if( strcmp(yytext, "!=") == 0){
+        return NE;
+    }else if( strcmp(yytext, ">=") == 0){
+        return GE;
+    }else if( strcmp(yytext, ">") == 0){
+        return GT;
+    }else if( strcmp(yytext, "==") == 0){
+        return EQ;
+    }else if( strcmp(yytext, "&&") == 0){
+        return AND;
+    }else if( strcmp(yytext, "||") == 0){
+        return OR;
+    }else if( strcmp(yytext, "!") == 0){
+        return NOT;
+    }
 }
 <INITIAL>{scientific} {
     tokenString("scientific",yytext);
+    return scien;
 }
 <INITIAL>{integer} {
     tokenString("integer",yytext);
+    return int_;
 }
 <INITIAL>{float} {
     tokenString("float",yytext);
+    return float_;
 }
 . { // Unrecognized character
     fprintf(stderr, "Error at line %d: %s\n", linenum, yytext);
@@ -171,36 +267,3 @@ scientific [0-9]*\.?[0-9]*(E|e)(\+|-)?[0-9]*
 }
 
 %%
-
-int main( int argc, char **argv )
-{
-    ID_list.list = malloc( 10 * sizeof(id) );
-    ID_list.capacity = 10;
-    ID_list.filled = 0;
-    if (argc >= 2)
-    {
-        yyin = fopen( argv[1], "r" );
-        if ( NULL == yyin ) {
-            fprintf( stderr, "Cannot open: %s\n", argv[1] );
-            exit(-1);
-        }
-    }
-    else
-    {
-        yyin = stdin;
-    }
-
-    yylex();
-
-    if (Opt_Statistic)
-    {
-        int i;
-        // Print frequency table
-        printf("frequencies of identifiers:\n");
-        for(i=0;i<ID_list.filled;i++){
-            printf("%s %d\n",ID_list.list[i].name,ID_list.list[i].count);
-        }
-    }
-
-    exit(0);
-}
