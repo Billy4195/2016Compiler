@@ -47,56 +47,161 @@ funct_decl : type identifier L_PAREN arg_list R_PAREN SEMICOLON
            | VOID identifier L_PAREN R_PAREN SEMICOLON
     ;
 
-funct_def : type identifier L_PAREN arg_list R_PAREN compound_statement
-          | VOID identifier L_PAREN arg_list R_PAREN compound_statement
-          | type identifier L_PAREN R_PAREN compound_statement
-          | VOID identifier L_PAREN R_PAREN compound_statement
+funct_def : type identifier L_PAREN arg_list R_PAREN compound_state
+          | VOID identifier L_PAREN arg_list R_PAREN compound_state
+          | type identifier L_PAREN R_PAREN compound_state
+          | VOID identifier L_PAREN R_PAREN compound_state
     ;
 
-var_decl : type id_decl_list SEMICOLON
+const_decl : CONST type const_init_list SEMICOLON;
+
+const_init_list : const_init_list COMMA const_init
+                | const_init
     ;
 
-const_decl : CONST type id_assign_list SEMICOLON
+const_init : identifier ASSIGN literal
     ;
 
-arg_list : arg_list arg
-         | arg
+var_decl : type var_init_list SEMICOLON;
+
+var_init_list : var_init_list COMMA var_init
+              | var_init_list COMMA arr_init
+              | var_init
+              | arr_init
     ;
 
-id_decl_list : id_decl_list COMMA identifier
-             | id_decl_list COMMA id_assign
-             | id_decl_list COMMA array_assign_list
-             | identifier
-             | id_assign
-             | array_assign_list
+var_init : identifier 
+         | identifier ASSIGN operand
     ;
 
-id_assign_list : id_assign_list COMMA id_assign
-               | id_assign
+arr_init : arr
+         | arr ASSIGN set 
     ;
 
-array_assign_list : array ASSIGN set
+arr : identifier dim_list
     ;
 
-array : identifier dim_list
+dim_list : dim_list L_BRACKET integer_const R_BRACKET
+         | L_BRACKET integer_const R_BRACKET
     ;
 
-arg : type identifier
-    | type array 
+set : L_BRACE R_BRACE
+    | L_BRACE expre_list R_BRACE
     ;
 
-id_assign : array ASSIGN operand
-          | identifier ASSIGN literal
-          | array ASSIGN expression
-          | identifier ASSIGN expression
+expre_list : expre_list COMMA expre
+           | expre
     ;
+
+arg_list : arg_list COMMA type identifier
+         | arg_list COMMA type arr
+         | type identifier
+         | type arr
+    ;
+
+funct_invo : identifier L_PAREN expre_list R_PAREN;
 
 type : INT
      | FLOAT
      | DOUBLE
      | STRING
      | BOOL
+    ;
+
+state_list : state_list state
+           | state
+    ;
+
+state : compound_state
+      | sim_state
+      | cond_state
+      | while_state
+      | for_state
+      | jump_state
+    ;
+
+
+compound_state : L_BRACE compound_body R_BRACE
+    ;
+
+compound_body : var_const_decl_list state_list
+              | state_list
+    ;
+    
+
+sim_state : var_ref ASSIGN expre SEMICOLON
+          | var_ref ASSIGN literal SEMICOLON
+          | PRINT var_ref SEMICOLON
+          | PRINT expre SEMICOLON
+          | READ var_ref SEMICOLON
+          | funct_invo SEMICOLON
+    ;
+
+cond_state : IF L_PAREN expre R_PAREN compound_state ELSE compound_state
+           | IF L_PAREN expre R_PAREN compound_state
+
+while_state : WHILE L_PAREN expre R_PAREN compound_state
+            | DO compound_state WHILE L_PAREN expre R_PAREN SEMICOLON
+
+for_state : FOR L_PAREN for_expr R_PAREN compound_state
+    ;
+
+for_expr : SEMICOLON SEMICOLON
+         | SEMICOLON SEMICOLON expre
+         | SEMICOLON bool_expre SEMICOLON
+         | expre SEMICOLON SEMICOLON 
+         | SEMICOLON bool_expre SEMICOLON expre
+         | expre SEMICOLON SEMICOLON expre
+         | expre SEMICOLON bool_expre SEMICOLON 
+         | expre SEMICOLON bool_expre SEMICOLON expre
     ; 
+
+jump_state : RETURN expre SEMICOLON
+           | RETURN literal SEMICOLON 
+           | BREAK SEMICOLON
+           | CONTINUE SEMICOLON
+    ;
+
+expre : bool_expre
+      | arith_expre
+      | L_PAREN expre R_PAREN
+    ;
+
+arith_expre : operand PLUS operand
+            | operand SUB operand
+            | operand MUL operand
+            | operand DIV operand
+            | operand MOD operand
+            | L_PAREN operand R_PAREN
+    ;
+
+bool_expre : operand OR operand
+           | operand AND operand
+           | NOT operand 
+           | operand LT operand
+           | operand LE operand
+           | operand EQ operand
+           | operand GE operand
+           | operand GT operand
+           | operand NE operand
+    ;
+    
+operand : expre
+        | var_ref
+        | literal
+        | funct_invo
+    ;
+
+var_ref : identifier
+        | arr_inst
+    ;
+
+arr_inst : identifier inst_list
+    ;
+
+inst_list : inst_list L_BRACKET operand R_BRACKET
+          | L_BRACKET operand R_BRACKET
+    ;
 
 identifier : ID
 	  ;	
@@ -116,108 +221,6 @@ num : integer_const
 integer_const : int_
     ;
 
-dim_list : dim_list dim
-         | dim
-    ;
-
-dim : L_BRACKET integer_const R_BRACKET
-    | L_BRACKET identifier R_BRACKET
-    | L_BRACKET expression R_BRACKET
-    ;
-
-set : set L_BRACE expression R_BRACE
-    | set L_BRACE literal R_BRACE
-    | L_BRACE expression R_BRACE
-    | L_BRACE literal R_BRACE
-    ;
-
-statement_list : statement_list statement
-               | statement
-    ;
-
-statement : compound_statement
-          | simple_statement
-          | conditional_statement
-          | while_statement
-          | for_statement
-          | jump_statement
-    ;
-
-compound_statement : L_BRACE var_const_decl_list statement_list  R_BRACE
-                   | L_BRACE statement_list R_BRACE
-                   | L_BRACE R_BRACE
-    ;
-
-simple_statement : expression SEMICOLON
-                 | PRINT array SEMICOLON
-                 | PRINT identifier SEMICOLON
-                 | PRINT expression SEMICOLON
-                 | READ array SEMICOLON
-                 | READ identifier SEMICOLON
-    ;
-
-conditional_statement : IF L_PAREN boolean_expression R_PAREN compound_statement ELSE compound_statement
-                      | IF L_PAREN boolean_expression R_PAREN compound_statement
-    ;
-
-while_statement : WHILE L_PAREN operand R_PAREN compound_statement
-                | DO compound_statement WHILE L_PAREN operand R_PAREN SEMICOLON
-    ;
-
-for_statement : FOR L_PAREN set_expre SEMICOLON boolean_expression SEMICOLON set_expre R_PAREN compound_statement
-              | FOR L_PAREN SEMICOLON boolean_expression SEMICOLON set_expre R_PAREN compound_statement
-              | FOR L_PAREN set_expre SEMICOLON SEMICOLON set_expre R_PAREN compound_statement
-              | FOR L_PAREN set_expre SEMICOLON boolean_expression SEMICOLON R_PAREN compound_statement
-              | FOR L_PAREN SEMICOLON SEMICOLON set_expre R_PAREN compound_statement
-              | FOR L_PAREN SEMICOLON boolean_expression SEMICOLON R_PAREN compound_statement 
-              | FOR L_PAREN set_expre SEMICOLON SEMICOLON R_PAREN compound_statement
-              | FOR L_PAREN SEMICOLON SEMICOLON R_PAREN compound_statement
-    ;
-
-jump_statement : RETURN expression SEMICOLON
-               | BREAK SEMICOLON
-               | CONTINUE SEMICOLON
-    ;
-
-expression : boolean_expression
-           | arith_expression
-    ;
-
-funct_invocation : identifier L_PAREN expression_list R_PAREN 
-    ;
-
-boolean_expression : operand OR operand
-                   | operand AND operand
-                   | NOT operand
-                   | operand LT operand
-                   | operand LE operand
-                   | operand EQ operand
-                   | operand GE operand
-                   | operand GT operand
-                   | operand NE operand
-                   | L_PAREN boolean_expression R_PAREN
-    ;
-
-arith_expression : operand PLUS operand
-                 | operand SUB operand
-                 | operand MUL operand
-                 | operand DIV operand
-                 | operand MOD operand
-                 | SUB operand %prec MOD
-                 | L_PAREN arith_expression R_PAREN
-    ;
-
-operand : set_expre
-        | identifier
-    ;
-
-set_expre : id_assign
-          | funct_invocation
-    ;
-
-expression_list : expression_list COMMA expression
-                | expression
-    ;
 
 %%
 
