@@ -86,11 +86,22 @@ dim_list : dim_list L_BRACKET integer_const R_BRACKET
     ;
 
 set : L_BRACE R_BRACE
-    | L_BRACE expre_list R_BRACE
+    | L_BRACE set_inner_list R_BRACE
     ;
 
-expre_list : expre_list COMMA expre
+set_inner_list : set_inner_list COMMA set_inner
+               | set_inner
+    ;
+
+set_inner : expre
+          | literal
+          | set_inner_list
+    ;
+
+expre_list : expre_list COMMA expre      
+           | expre_list COMMA operand
            | expre
+           | operand 
     ;
 
 arg_list : arg_list COMMA type identifier
@@ -125,36 +136,46 @@ compound_state : L_BRACE compound_body R_BRACE
     ;
 
 compound_body : var_const_decl_list state_list
+              | var_const_decl_list
               | state_list
+              |
     ;
     
 
-sim_state : var_ref ASSIGN expre SEMICOLON
-          | var_ref ASSIGN literal SEMICOLON
+sim_state : var_assign SEMICOLON
           | PRINT var_ref SEMICOLON
-          | PRINT expre SEMICOLON
+          | PRINT operand SEMICOLON
           | READ var_ref SEMICOLON
           | funct_invo SEMICOLON
     ;
 
-cond_state : IF L_PAREN expre R_PAREN compound_state ELSE compound_state
-           | IF L_PAREN expre R_PAREN compound_state
-
-while_state : WHILE L_PAREN expre R_PAREN compound_state
-            | DO compound_state WHILE L_PAREN expre R_PAREN SEMICOLON
-
-for_state : FOR L_PAREN for_expr R_PAREN compound_state
+var_assign : var_ref ASSIGN expre
+           | var_ref ASSIGN literal
     ;
 
-for_expr : SEMICOLON SEMICOLON
-         | SEMICOLON SEMICOLON expre
-         | SEMICOLON bool_expre SEMICOLON
-         | expre SEMICOLON SEMICOLON 
-         | SEMICOLON bool_expre SEMICOLON expre
-         | expre SEMICOLON SEMICOLON expre
-         | expre SEMICOLON bool_expre SEMICOLON 
-         | expre SEMICOLON bool_expre SEMICOLON expre
+cond_state : IF L_PAREN operand R_PAREN compound_state ELSE compound_state
+           | IF L_PAREN operand R_PAREN compound_state
+
+while_state : WHILE L_PAREN operand R_PAREN compound_state
+            | DO compound_state WHILE L_PAREN operand R_PAREN SEMICOLON
+    ;
+
+for_state : FOR L_PAREN for_expre R_PAREN compound_state
+    ;
+
+for_expre : SEMICOLON SEMICOLON
+          | SEMICOLON SEMICOLON set_expre
+          | SEMICOLON operand SEMICOLON
+          | set_expre SEMICOLON SEMICOLON 
+          | SEMICOLON operand SEMICOLON set_expre
+          | set_expre SEMICOLON SEMICOLON set_expre
+          | set_expre SEMICOLON operand SEMICOLON 
+          | set_expre SEMICOLON operand SEMICOLON set_expre
     ; 
+
+set_expre : funct_invo
+          | var_assign
+    ;
 
 jump_state : RETURN expre SEMICOLON
            | RETURN literal SEMICOLON 
