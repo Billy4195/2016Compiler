@@ -1,3 +1,7 @@
 *.swp
 *.yy.c
 scanner
+parser
+parser.tab*
+sample_test_and_result
+

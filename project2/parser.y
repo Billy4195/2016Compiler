@@ -19,6 +19,7 @@ extern char buf[256];           /* declared in lex.l */
 %%
 
 program : decl_and_def_list
+        |
 	  ;
 
 decl_and_def_list	: decl_and_def_list declaration
@@ -95,7 +96,7 @@ set_inner_list : set_inner_list COMMA set_inner
 
 set_inner : expre
           | literal
-          | set_inner_list
+          | set
     ;
 
 expre_list : expre_list COMMA expre      
