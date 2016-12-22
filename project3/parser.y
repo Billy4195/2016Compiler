@@ -120,14 +120,14 @@ decl_and_def_list : decl_and_def_list var_decl
 				  ;
 
 funct_def : scalar_type ID L_PAREN R_PAREN {
-    //level += 1;
+    level += 1;
 }
       compound_statement {
     struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __TRUE);
     Table_push_back(symbolTable,new_node);
 }
 		  | scalar_type ID L_PAREN parameter_list R_PAREN { 
-    //level += 1;
+    level += 1;
     struct symEntry *new_node;
     struct Param *it = $4->head;
     for(;it != NULL; it = it->next){
@@ -140,14 +140,14 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     Table_push_back(symbolTable,new_node);
 }
 		  | VOID ID L_PAREN R_PAREN {
-    //level += 1;
+    level += 1;
 }
       compound_statement {
     struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __TRUE);
     Table_push_back(symbolTable,new_node);
 }
 		  | VOID ID L_PAREN parameter_list R_PAREN {
-    //level += 1;
+    level += 1;
     struct symEntry *new_node;
     struct Param *it = $4->head;
     for(;it != NULL; it = it->next){
@@ -281,7 +281,10 @@ dim : dim ML_BRACE INT_CONST MR_BRACE {
 }
 	;
 
-compound_statement : L_BRACE var_const_stmt_list R_BRACE
+compound_statement : L_BRACE var_const_stmt_list R_BRACE {
+    print_Table(symbolTable, level);
+    level -= 1;
+}
 				   ;
 
 var_const_stmt_list : var_const_stmt_list statement	
