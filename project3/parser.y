@@ -119,19 +119,43 @@ decl_and_def_list : decl_and_def_list var_decl
 				  | 
 				  ;
 
-funct_def : scalar_type ID L_PAREN R_PAREN compound_statement {
+funct_def : scalar_type ID L_PAREN R_PAREN {
+    //level += 1;
+}
+      compound_statement {
     struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __TRUE);
     Table_push_back(symbolTable,new_node);
 }
-		  | scalar_type ID L_PAREN parameter_list R_PAREN  compound_statement {
+		  | scalar_type ID L_PAREN parameter_list R_PAREN { 
+    //level += 1;
+    struct symEntry *new_node;
+    struct Param *it = $4->head;
+    for(;it != NULL; it = it->next){
+        new_node = createParam_node(it, level);
+        Table_push_back(symbolTable, new_node);
+    }
+}
+      compound_statement {
     struct symEntry *new_node = createFunc_node($1, $2, $4, level, __TRUE);
     Table_push_back(symbolTable,new_node);
 }
-		  | VOID ID L_PAREN R_PAREN compound_statement {
+		  | VOID ID L_PAREN R_PAREN {
+    //level += 1;
+}
+      compound_statement {
     struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __TRUE);
     Table_push_back(symbolTable,new_node);
 }
-		  | VOID ID L_PAREN parameter_list R_PAREN compound_statement {
+		  | VOID ID L_PAREN parameter_list R_PAREN {
+    //level += 1;
+    struct symEntry *new_node;
+    struct Param *it = $4->head;
+    for(;it != NULL; it = it->next){
+        new_node = createParam_node(it, level);
+        Table_push_back(symbolTable, new_node);
+    }
+}
+      compound_statement {
     struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __TRUE);
     Table_push_back(symbolTable,new_node);
 }
@@ -221,7 +245,17 @@ literal_list : literal_list COMMA logical_expression
                          | 
 			 ;
 
-const_decl : CONST scalar_type const_list SEMICOLON;
+const_decl : CONST scalar_type const_list SEMICOLON {
+    struct Const_type *it = $3->head,*tmp;
+    struct symEntry *new_node;
+    for(;it != NULL ;it = tmp){
+        new_node = createConst_node($2, it, level);
+        Table_push_back(symbolTable, new_node);
+        tmp = it->next;
+        free(it);
+    }
+}
+       ;
 
 const_list : const_list COMMA ID ASSIGN_OP literal_const{
     Const_list_push_back($1, new_Const($3, $5));

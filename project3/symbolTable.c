@@ -185,6 +185,29 @@ struct symEntry *createVar_node(struct Type *type,struct ID_type *id, int level)
     return new;
 }
 
+struct symEntry *createConst_node(struct Type *type,struct Const_type *con, int level){
+    struct symEntry *new = (struct symEntry*)malloc(sizeof(struct symEntry));
+    new->type = type;
+    new->name = con->name;
+    new->attr = (union Attr*)malloc(sizeof(union Attr));
+    new->attr->constVal = con->attr;
+    new->level = level;
+    new->isDef = __FALSE;
+    new->kind = CONST_t;
+    return new;
+}
+
+struct symEntry *createParam_node(struct Param *param,int level){
+    struct symEntry *new = (struct symEntry*)malloc(sizeof(struct symEntry));
+    new->type = param->type;
+    new->name = param->name;
+    new->attr = NULL;
+    new->level = level;
+    new->isDef = __FALSE;
+    new->kind = PARAM_t;
+    return new;
+}
+
 void print_Type(struct Type *type,int fixed){
     char buffer[30];
     memset(buffer,0,sizeof(buffer));
