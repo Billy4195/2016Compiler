@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "DataType.h"
+#include "symbolTable.h"
 
 extern int yyparse();
 extern FILE* yyin;
+extern struct symTable *symbolTable;
 int  main( int argc, char **argv )
 {
 
@@ -24,6 +27,8 @@ int  main( int argc, char **argv )
 	  	fprintf( stderr, "Usage: ./parser [filename]\n" );
    		exit(0);
  	} 
+  symbolTable = (struct symTable*)malloc(sizeof(struct symTable));
+  init_Table(symbolTable);
 
 	yyparse();	/* primary procedure of parser */
 

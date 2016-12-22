@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 
+void init_Table(struct symTable *symtable){
+    symtable->table = (struct symEntry**)malloc(sizeof(struct symEntry*) * 15);
+    symtable->capacity = 15;
+    symtable->filled = 0;
+}
+
 struct ConstAttr *new_ConstAttr(Kind_t kind, void *value){
     struct ConstAttr *new = (struct ConstAttr*) malloc(sizeof(struct ConstAttr));
     new->kind = kind;

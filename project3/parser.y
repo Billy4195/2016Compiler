@@ -10,6 +10,7 @@ extern FILE	*yyin;
 extern char	*yytext;
 extern char buf[256];
 int level = 0;
+struct symTable *symbolTable;
 
 %}
 %union{

@@ -74,4 +74,10 @@ struct symEntry{
     union Attr *attr;
     __BOOL_t isDef;
 };
+
+struct symTable{
+    struct symEntry **table;
+    unsigned int capacity;
+    unsigned int filled;
+};
 #endif
