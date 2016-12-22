@@ -3,5 +3,8 @@
 scanner
 parser
 parser.tab*
+*.o
+*.output
+*.tab.*
 sample_test_and_result
 

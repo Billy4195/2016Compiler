@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include "DataType.h"
+#include "symbolTable.h"
 
 
 extern int linenum;
@@ -9,12 +11,25 @@ extern char	*yytext;
 extern char buf[256];
 
 %}
+%union{
+    int intval;
+    float floval;
+    double douval;
+    char *strval;
+    struct ConstAttr *constAttr;
+    struct Dim *dim;
+    struct Type *type;
+}
 
-%token	ID
-%token	INT_CONST
-%token	FLOAT_CONST
-%token	SCIENTIFIC
-%token	STR_CONST
+%type <constAttr> literal_const
+%type <type> scalar_type
+%type <dim> dim
+
+%token	<strval> ID
+%token	<intval> INT_CONST
+%token	<douval> FLOAT_CONST
+%token	<douval> SCIENTIFIC
+%token	<strval> STR_CONST
 
 %token	LE_OP
 %token	NE_OP
@@ -141,8 +156,13 @@ const_list : const_list COMMA ID ASSIGN_OP literal_const
 array_decl : ID dim
 		   ;
 
-dim : dim ML_BRACE INT_CONST MR_BRACE
-	| ML_BRACE INT_CONST MR_BRACE
+dim : dim ML_BRACE INT_CONST MR_BRACE {
+    Dim_add_new_num($1,$3);
+    $$ = $1;
+}
+	| ML_BRACE INT_CONST MR_BRACE {
+    $$ = new_Dim($2);
+}
 	;
 
 compound_statement : L_BRACE var_const_stmt_list R_BRACE
@@ -288,22 +308,58 @@ dimension : dimension ML_BRACE logical_expression MR_BRACE
 
 
 
-scalar_type : INT
-			| DOUBLE
-			| STRING
-			| BOOL
-			| FLOAT
+scalar_type : INT {
+    $$ = new_Type(INT_t);
+}
+			| DOUBLE {
+    $$ = new_Type(DOUBLE_t);
+}
+			| STRING {
+    $$ = new_Type(STR_t);
+}
+			| BOOL {
+    $$ = new_Type(BOOLEAN_t);
+}
+			| FLOAT {
+    $$ = new_Type(FLOAT_t);
+}
 			;
  
-literal_const : INT_CONST
-			  | SUB_OP INT_CONST
-			  | FLOAT_CONST
-			  | SUB_OP FLOAT_CONST
-			  | SCIENTIFIC
-			  | SUB_OP SCIENTIFIC
-			  | STR_CONST
-			  | TRUE
-			  | FALSE
+literal_const : INT_CONST {
+    int tmp = $1;
+    $$ = new_ConstAttr(INT_t,(void*)&tmp);
+}
+			  | SUB_OP INT_CONST {
+    int tmp = -$2;
+    $$ = new_ConstAttr(INT_t,(void*)&tmp);
+}
+			  | FLOAT_CONST {
+    float tmp = $1;
+    $$ = new_ConstAttr(FLOAT_t,(void*)&tmp);
+}
+			  | SUB_OP FLOAT_CONST {
+    float tmp = -$2;
+    $$ = new_ConstAttr(FLOAT_t,(void*)&tmp);
+}
+			  | SCIENTIFIC {
+    double tmp = $1;
+    $$ = new_ConstAttr(DOUBLE_t,(void*)&tmp);
+}
+			  | SUB_OP SCIENTIFIC {
+    double tmp = -$2;
+    $$ = new_ConstAttr(DOUBLE_t,(void*)&tmp);
+}
+			  | STR_CONST {
+    $$ = new_ConstAttr(STR_t,(void*)$1);
+}
+			  | TRUE {
+    int tmp = 1;
+    $$ = new_ConstAttr(BOOLEAN_t,(void*)&tmp);
+}
+			  | FALSE {
+    int tmp = 0;
+    $$ = new_ConstAttr(BOOLEAN_t,(void*)&tmp);
+}
 			  ;
 %%
 

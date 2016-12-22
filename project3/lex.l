@@ -272,14 +272,14 @@ id *new_id();
 	
 -?0 |
 [1-9][0-9]* {
-		tokenString("integer", yytext);	return INT_CONST;
+		tokenString("integer", yytext); yylval.intval = atoi(yytext);	return INT_CONST;
 	}
 [0-9]+\.[0-9]+	{
-		tokenString("float", yytext);	return FLOAT_CONST;
+		tokenString("float", yytext);	yylval.douval = atof(yytext); return FLOAT_CONST;
 	}
 
 ([0-9]+|([0-9]*\.[0-9]+))([eE][-+]?[0-9]+)	{
-		tokenString("scientific", yytext);	return SCIENTIFIC;
+		tokenString("scientific", yytext); yylval.douval = atof(yytext); 	return SCIENTIFIC;
 	}
 "\""	{ 
 		LIST;
@@ -327,6 +327,7 @@ id *new_id();
 		if( Opt_Token)
 			tokenString("string", strContent);
 		BEGIN INITIAL;
+    yylval.strval = strdup(strContent);
 		return STR_CONST;
 	}
 <STR>[^\\\n\"]	{
