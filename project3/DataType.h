@@ -10,6 +10,11 @@ struct Dim{
     unsigned int *numbers;
 };
 
+struct ID_type{
+    char *name;
+    struct Dim *dim;
+};
+
 struct Type{
     Kind_t kind;
     __BOOL_t isArray;

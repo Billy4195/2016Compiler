@@ -19,11 +19,13 @@ extern char buf[256];
     struct ConstAttr *constAttr;
     struct Dim *dim;
     struct Type *type;
+    struct ID_type *id;
 }
 
 %type <constAttr> literal_const
 %type <type> scalar_type
 %type <dim> dim
+%type <id> array_decl
 
 %token	<strval> ID
 %token	<intval> INT_CONST
@@ -153,7 +155,9 @@ const_list : const_list COMMA ID ASSIGN_OP literal_const
                     
 		   ;
 
-array_decl : ID dim
+array_decl : ID dim {
+    $$ = new_ID($1,$2);
+}
 		   ;
 
 dim : dim ML_BRACE INT_CONST MR_BRACE {

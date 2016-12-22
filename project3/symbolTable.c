@@ -81,3 +81,10 @@ void Dim_add_new_num(struct Dim *dim,int num){
     }
     dim->numbers[dim->filled++] = num;
 }
+
+struct ID_type *new_ID(char *name,struct Dim *dim){
+    struct ID_type *new = (struct ID_type*)malloc(sizeof(struct ID_type));
+    new->name = name;
+    new->dim = dim;
+    return new;
+}
