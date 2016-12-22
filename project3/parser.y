@@ -9,6 +9,7 @@ extern int linenum;
 extern FILE	*yyin;
 extern char	*yytext;
 extern char buf[256];
+int level = 0;
 
 %}
 %union{
@@ -121,10 +122,18 @@ funct_def : scalar_type ID L_PAREN R_PAREN compound_statement
 		  | VOID ID L_PAREN parameter_list R_PAREN compound_statement
 		  ;
 
-funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON
-	 	   | scalar_type ID L_PAREN parameter_list R_PAREN SEMICOLON
-		   | VOID ID L_PAREN R_PAREN SEMICOLON
-		   | VOID ID L_PAREN parameter_list R_PAREN SEMICOLON
+funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON {
+    struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __FALSE);
+}
+	 	   | scalar_type ID L_PAREN parameter_list R_PAREN SEMICOLON {
+    struct symEntry *new_node = createFunc_node($1, $2, $4, level, __FALSE);
+}
+		   | VOID ID L_PAREN R_PAREN SEMICOLON {
+    struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __FALSE);
+}
+		   | VOID ID L_PAREN parameter_list R_PAREN SEMICOLON {
+    struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __FALSE);
+}
 		   ;
 
 parameter_list : parameter_list COMMA scalar_type ID {

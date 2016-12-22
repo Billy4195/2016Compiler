@@ -144,3 +144,15 @@ void Const_list_push_back(struct Const_list *list, struct Const_type *con){
     list->tail->next = con;
     list->tail = con;
 }
+
+struct symEntry *createFunc_node(struct Type *type,char *name,struct Param_list *param_list, int level, __BOOL_t isDef){
+    struct symEntry *new = (struct symEntry*)malloc(sizeof(struct symEntry));
+    new->type = type;
+    new->name = name;
+    new->attr = (union Attr*)malloc(sizeof(union Attr));
+    new->attr->param_list = param_list;
+    new->level = level;
+    new->isDef = isDef;
+    new->kind = FUNC_t;
+    return new;
+}

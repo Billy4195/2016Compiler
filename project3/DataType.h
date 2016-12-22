@@ -61,17 +61,17 @@ struct Const_list{
     struct Const_type *tail;
 };
 
-union{
+union Attr{
     struct ConstAttr *constVal;
-    struct FuncAttr *param_list;
-}Attr;
+    struct Param_list *param_list;
+};
 
 struct symEntry{
     char *name;
     Kind_t kind;
     int level;
     struct Type *type;
-    struct Attr *attr;
+    union Attr *attr;
     __BOOL_t isDef;
 };
 #endif
