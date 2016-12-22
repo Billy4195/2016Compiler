@@ -13,6 +13,12 @@ struct Dim{
 struct ID_type{
     char *name;
     struct Dim *dim;
+    struct ID_type *next;
+};
+
+struct ID_list{
+    struct ID_type *head;
+    struct ID_type *tail;
 };
 
 struct Type{

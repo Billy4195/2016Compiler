@@ -86,5 +86,18 @@ struct ID_type *new_ID(char *name,struct Dim *dim){
     struct ID_type *new = (struct ID_type*)malloc(sizeof(struct ID_type));
     new->name = name;
     new->dim = dim;
+    new->next = NULL;
     return new;
+}
+
+struct ID_list *new_ID_list(struct ID_type *id){
+    struct ID_list *new = (struct ID_list*)malloc(sizeof(struct ID_list));
+    new->head = id;
+    new->tail = id;
+    return new;
+}
+
+void ID_list_push_back(struct ID_list *list, struct ID_type *id){
+    list->tail->next = id;
+    list->tail = id;
 }

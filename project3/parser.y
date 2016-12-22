@@ -20,12 +20,14 @@ extern char buf[256];
     struct Dim *dim;
     struct Type *type;
     struct ID_type *id;
+    struct ID_list *id_list;
 }
 
 %type <constAttr> literal_const
 %type <type> scalar_type
 %type <dim> dim
 %type <id> array_decl
+%type <id_list> identifier_list
 
 %token	<strval> ID
 %token	<intval> INT_CONST
@@ -130,14 +132,34 @@ parameter_list : parameter_list COMMA scalar_type ID
 var_decl : scalar_type identifier_list SEMICOLON
 		 ;
 
-identifier_list : identifier_list COMMA ID
-		 		| identifier_list COMMA ID ASSIGN_OP logical_expression
-				| identifier_list COMMA array_decl ASSIGN_OP initial_array
-				| identifier_list COMMA array_decl
-				| array_decl ASSIGN_OP initial_array
-				| array_decl
-				| ID ASSIGN_OP logical_expression
-				| ID
+identifier_list : identifier_list COMMA ID {
+    ID_list_push_back($1, new_ID($3, NULL));
+    $$ = $1;
+}
+		 		| identifier_list COMMA ID ASSIGN_OP logical_expression {
+    ID_list_push_back($1, new_ID($3, NULL));
+    $$ = $1;
+}
+				| identifier_list COMMA array_decl ASSIGN_OP initial_array {
+    ID_list_push_back($1, $3);
+    $$ = $1;
+}
+				| identifier_list COMMA array_decl {
+    ID_list_push_back($1, $3);
+    $$ = $1;
+}
+				| array_decl ASSIGN_OP initial_array {
+    $$ = new_ID_list( $1 );
+}
+				| array_decl {
+    $$ = new_ID_list( $1 );
+}
+				| ID ASSIGN_OP logical_expression {
+    $$ = new_ID_list( new_ID($1,NULL) );
+}
+				| ID {
+    $$ = new_ID_list( new_ID($1,NULL) );
+}
 				;
 
 initial_array : L_BRACE literal_list R_BRACE
