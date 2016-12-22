@@ -21,6 +21,8 @@ extern char buf[256];
     struct Type *type;
     struct ID_type *id;
     struct ID_list *id_list;
+    struct Param *param;
+    struct Param_list *param_list;
 }
 
 %type <constAttr> literal_const
@@ -28,6 +30,7 @@ extern char buf[256];
 %type <dim> dim
 %type <id> array_decl
 %type <id_list> identifier_list
+%type <param_list> parameter_list
 
 %token	<strval> ID
 %token	<intval> INT_CONST
@@ -123,10 +126,20 @@ funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON
 		   | VOID ID L_PAREN parameter_list R_PAREN SEMICOLON
 		   ;
 
-parameter_list : parameter_list COMMA scalar_type ID
-			   | parameter_list COMMA scalar_type array_decl
-			   | scalar_type array_decl
-			   | scalar_type ID
+parameter_list : parameter_list COMMA scalar_type ID {
+    Param_list_push_back($1, new_Param($3, new_ID($4, NULL)));
+    $$ = $1;
+}
+			   | parameter_list COMMA scalar_type array_decl {
+    Param_list_push_back($1, new_Param($3, $4));
+    $$ = $1;
+}
+			   | scalar_type array_decl {
+    $$ = new_Param_list( new_Param($1, $2) );
+}
+			   | scalar_type ID {
+    $$ = new_Param_list( new_Param($1, new_ID($2, NULL)) );
+}
 			   ;
 
 var_decl : scalar_type identifier_list SEMICOLON

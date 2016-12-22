@@ -101,3 +101,26 @@ void ID_list_push_back(struct ID_list *list, struct ID_type *id){
     list->tail->next = id;
     list->tail = id;
 }
+
+struct Param *new_Param(struct Type *type, struct ID_type *id){
+    struct Param *new = (struct Param*)malloc(sizeof(struct Param));
+    new->type = type;
+    new->type->isArray = id->dim != NULL ? __TRUE : __FALSE;
+    new->type->dim = id->dim;       //no matter NULL or not
+    new->name = id->name;
+    new->next = NULL;
+    free(id);
+    return new;
+}
+
+struct Param_list *new_Param_list(struct Param *param){
+    struct Param_list *new = (struct Param_list*)malloc(sizeof(struct Param_list));
+    new->head = param;
+    new->tail = param;
+    return new;
+}
+
+void Param_list_push_back(struct Param_list *list, struct Param *param){
+    list->tail->next = param;
+    list->tail = param;
+}

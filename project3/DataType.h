@@ -40,14 +40,16 @@ struct ConstAttr{
 };
 
 struct Param{
-    char *name;
     struct Type *type;
+    char *name;
+    struct Param *next;
 };
 
-/*struct ParamList{
-    
+struct Param_list{
+    struct Param *head;
+    struct Param *tail;
 };
-
+/*
 struct FuncAttr{
     int len;
 
