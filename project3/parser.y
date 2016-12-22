@@ -21,8 +21,8 @@ extern char buf[256];
     struct Type *type;
     struct ID_type *id;
     struct ID_list *id_list;
-    struct Param *param;
     struct Param_list *param_list;
+    struct Const_list *const_list;
 }
 
 %type <constAttr> literal_const
@@ -31,6 +31,7 @@ extern char buf[256];
 %type <id> array_decl
 %type <id_list> identifier_list
 %type <param_list> parameter_list
+%type <const_list> const_list
 
 %token	<strval> ID
 %token	<intval> INT_CONST
@@ -185,8 +186,13 @@ literal_list : literal_list COMMA logical_expression
 
 const_decl : CONST scalar_type const_list SEMICOLON;
 
-const_list : const_list COMMA ID ASSIGN_OP literal_const
-		   | ID ASSIGN_OP literal_const
+const_list : const_list COMMA ID ASSIGN_OP literal_const{
+    Const_list_push_back($1, new_Const($3, $5));
+    $$ = $1;
+}
+		   | ID ASSIGN_OP literal_const {
+    $$ = new_Const_list( new_Const($1, $3) );
+}
                     
 		   ;
 

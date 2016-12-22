@@ -10,3 +10,6 @@ void ID_list_push_back(struct ID_list *list, struct ID_type *id);
 struct Param *new_Param(struct Type *type, struct ID_type *id);
 struct Param_list *new_Param_list(struct Param *param);
 void Param_list_push_back(struct Param_list *list, struct Param *param);
+struct Const_type* new_Const(char *name,struct ConstAttr *attr);
+struct Const_list* new_Const_list(struct Const_type *con);
+void Const_list_push_back(struct Const_list *list, struct Const_type *con);

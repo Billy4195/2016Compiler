@@ -124,3 +124,23 @@ void Param_list_push_back(struct Param_list *list, struct Param *param){
     list->tail->next = param;
     list->tail = param;
 }
+
+struct Const_type* new_Const(char *name,struct ConstAttr *attr){
+    struct Const_type *new = (struct Const_type*)malloc(sizeof(struct Const_type));
+    new->name = name;
+    new->attr = attr;
+    new->next = NULL;
+    return new;
+}
+
+struct Const_list* new_Const_list(struct Const_type *con){
+    struct Const_list *new = (struct Const_list*)malloc(sizeof(struct Const_list));
+    new->head = con;
+    new->tail = con;
+    return new;
+}
+
+void Const_list_push_back(struct Const_list *list, struct Const_type *con){
+    list->tail->next = con;
+    list->tail = con;
+}

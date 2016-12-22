@@ -49,11 +49,17 @@ struct Param_list{
     struct Param *head;
     struct Param *tail;
 };
-/*
-struct FuncAttr{
-    int len;
 
-};*/
+struct Const_type{
+    char *name;
+    struct ConstAttr *attr;
+    struct Const_type *next;
+};
+
+struct Const_list{
+    struct Const_type *head;
+    struct Const_type *tail;
+};
 
 union{
     struct ConstAttr *constVal;
