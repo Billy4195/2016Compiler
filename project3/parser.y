@@ -119,10 +119,22 @@ decl_and_def_list : decl_and_def_list var_decl
 				  | 
 				  ;
 
-funct_def : scalar_type ID L_PAREN R_PAREN compound_statement
-		  | scalar_type ID L_PAREN parameter_list R_PAREN  compound_statement
-		  | VOID ID L_PAREN R_PAREN compound_statement
-		  | VOID ID L_PAREN parameter_list R_PAREN compound_statement
+funct_def : scalar_type ID L_PAREN R_PAREN compound_statement {
+    struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __TRUE);
+    Table_push_back(symbolTable,new_node);
+}
+		  | scalar_type ID L_PAREN parameter_list R_PAREN  compound_statement {
+    struct symEntry *new_node = createFunc_node($1, $2, $4, level, __TRUE);
+    Table_push_back(symbolTable,new_node);
+}
+		  | VOID ID L_PAREN R_PAREN compound_statement {
+    struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __TRUE);
+    Table_push_back(symbolTable,new_node);
+}
+		  | VOID ID L_PAREN parameter_list R_PAREN compound_statement {
+    struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __TRUE);
+    Table_push_back(symbolTable,new_node);
+}
 		  ;
 
 funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON {
@@ -159,7 +171,16 @@ parameter_list : parameter_list COMMA scalar_type ID {
 }
 			   ;
 
-var_decl : scalar_type identifier_list SEMICOLON
+var_decl : scalar_type identifier_list SEMICOLON {
+    struct ID_type *it = $2->head,*tmp;
+    struct symEntry *new_node;
+    for(;it != NULL ;it = tmp){
+        new_node = createVar_node($1, it, level);
+        Table_push_back(symbolTable, new_node);
+        tmp = it->next;
+        free(it);
+    }
+}
 		 ;
 
 identifier_list : identifier_list COMMA ID {

@@ -174,6 +174,17 @@ struct symEntry *createFunc_node(struct Type *type,char *name,struct Param_list 
     return new;
 }
 
+struct symEntry *createVar_node(struct Type *type,struct ID_type *id, int level){
+    struct symEntry *new = (struct symEntry*)malloc(sizeof(struct symEntry));
+    new->type = type;
+    new->name = id->name;
+    new->attr = NULL;
+    new->level = level;
+    new->isDef = __FALSE;
+    new->kind = VAR_t;
+    return new;
+}
+
 void print_Type(struct Type *type,int fixed){
     char buffer[30];
     memset(buffer,0,sizeof(buffer));
