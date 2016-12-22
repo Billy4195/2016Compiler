@@ -100,7 +100,9 @@ struct symTable *symbolTable;
 %start program
 %%
 
-program :  decl_list funct_def decl_and_def_list 
+program :  decl_list funct_def decl_and_def_list {
+    print_Table(symbolTable,0);
+}
            ;
 
 decl_list : decl_list var_decl
@@ -125,15 +127,19 @@ funct_def : scalar_type ID L_PAREN R_PAREN compound_statement
 
 funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON {
     struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __FALSE);
+    Table_push_back(symbolTable,new_node);
 }
 	 	   | scalar_type ID L_PAREN parameter_list R_PAREN SEMICOLON {
     struct symEntry *new_node = createFunc_node($1, $2, $4, level, __FALSE);
+    Table_push_back(symbolTable,new_node);
 }
 		   | VOID ID L_PAREN R_PAREN SEMICOLON {
     struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __FALSE);
+    Table_push_back(symbolTable,new_node);
 }
 		   | VOID ID L_PAREN parameter_list R_PAREN SEMICOLON {
     struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __FALSE);
+    Table_push_back(symbolTable,new_node);
 }
 		   ;
 

@@ -3,10 +3,21 @@
 #include <stdio.h>
 #include <string.h>
 
-void init_Table(struct symTable *symtable){
-    symtable->table = (struct symEntry**)malloc(sizeof(struct symEntry*) * 15);
-    symtable->capacity = 15;
-    symtable->filled = 0;
+void init_Table(struct symTable *symboltable){
+    symboltable->table = (struct symEntry**)malloc(sizeof(struct symEntry*) * 15);
+    symboltable->capacity = 15;
+    symboltable->filled = 0;
+}
+
+void Table_push_back(struct symTable *symboltable, struct symEntry *entry){
+    if(symboltable->capacity == symboltable->filled){
+        struct symEntry **tmp = (struct symEntry **)malloc(sizeof(struct symEntry*) * (symboltable->capacity + 5));
+        memcpy(tmp,symboltable->table,sizeof(struct symEntry*)*symboltable->capacity);
+        free(symboltable->table);
+        symboltable->table = tmp;
+        symboltable->capacity += 5;
+    }
+    symboltable->table[symboltable->filled++] = entry;
 }
 
 struct ConstAttr *new_ConstAttr(Kind_t kind, void *value){
@@ -162,3 +173,126 @@ struct symEntry *createFunc_node(struct Type *type,char *name,struct Param_list 
     new->kind = FUNC_t;
     return new;
 }
+
+void print_Type(struct Type *type,int fixed){
+    char buffer[30];
+    memset(buffer,0,sizeof(buffer));
+    switch(type->kind){
+    case INT_t:
+        sprintf(buffer,"int");
+        break;
+    case FLOAT_t:
+        sprintf(buffer,"float");
+        break;
+    case DOUBLE_t:
+        sprintf(buffer,"double");
+        break;
+    case STR_t:
+        sprintf(buffer,"string");
+        break;
+    case BOOLEAN_t:
+        sprintf(buffer,"bool");
+        break;
+    case VOID_t:
+        sprintf(buffer,"void");
+        break;
+    }
+    if(type->isArray){
+        int i;
+        char b[15];
+        for(i=0;i<type->dim->filled;i++){
+            memset(b,0,sizeof(b));
+            sprintf(b,"[%d]",type->dim->numbers[i]);
+            strcat(buffer,b);
+        }
+    }
+    if(fixed)
+        printf("%-19s",buffer);
+    else
+        printf("%s",buffer);
+}
+
+void print_Table(struct symTable *symboltable,int scope){
+    int i;
+    printf("=======================================================================================\n");
+    // Name [29 blanks] Kind [7 blanks] Level [7 blank] Type [15 blanks] Attribute [15 blanks]
+    printf("Name                             Kind       Level       Type               Attribute               \n");
+    printf("---------------------------------------------------------------------------------------\n");
+    for(i=0;i<symboltable->filled;i++){
+        if(symboltable->table[i]->level == scope){
+            printf("%-32s ",symboltable->table[i]->name);
+            switch(symboltable->table[i]->kind){
+            case FUNC_t:
+                printf("function  ");
+                break;
+            case VAR_t:
+                printf("variable  ");
+                break;
+            case PARAM_t:
+                printf("parameter ");
+                break;
+            case CONST_t:
+                printf("constant  ");
+                break;
+            }
+            if(symboltable->table[i]->level == 0){
+                printf("%2d(global)   ",symboltable->table[i]->level);
+            }else{
+                printf("%2d(local)    ",symboltable->table[i]->level);
+            }
+            print_Type( symboltable->table[i]->type, 1);
+            if(symboltable->table[i]->kind == CONST_t){
+                struct ConstAttr *tmp = symboltable->table[i]->attr->constVal;
+                switch(tmp->kind){
+                case INT_t:
+                    if(tmp->minus){
+                        printf("%d",-tmp->value.intval);
+                    }else{
+                        printf("%d",tmp->value.intval);
+                    }
+                    break;
+                case FLOAT_t:
+                    if(tmp->minus){
+                        printf("%f",-tmp->value.floval);
+                    }else{
+                        printf("%f",tmp->value.floval);
+                    }
+                    break;
+                case DOUBLE_t:
+                    if(tmp->minus){
+                        printf("%lf",-tmp->value.douval);
+                    }else{
+                        printf("%lf",tmp->value.douval);
+                    }
+                    break;
+                case STR_t:
+                    printf("%s",tmp->value.strval);
+                    break;
+                case BOOLEAN_t:
+                    if(tmp->value.bval){
+                        printf("True");
+                    }else{
+                        printf("False");
+                    }
+                    break;
+                }
+            }else if(symboltable->table[i]->kind == FUNC_t){
+                struct Param_list *tmp = symboltable->table[i]->attr->param_list;
+                if(tmp){
+                    struct Param *it = tmp->head;
+                    if(it){
+                        print_Type( it->type, 0);
+                        it = it->next;
+                    }
+                    for(; it != NULL ;it = it->next){
+                        printf(",");
+                        print_Type( it->type, 0 );
+                    }
+                }
+            }
+            printf("\n");
+        }
+    }
+    printf("======================================================================================\n");
+}
+

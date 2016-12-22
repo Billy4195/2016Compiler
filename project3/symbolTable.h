@@ -15,3 +15,6 @@ struct Const_list* new_Const_list(struct Const_type *con);
 void Const_list_push_back(struct Const_list *list, struct Const_type *con);
 struct symEntry *createFunc_node(struct Type *type, char *name, struct Param_list *param_list, int level, __BOOL_t isDef);
 void init_Table(struct symTable *symtable);
+void Table_push_back(struct symTable *symboltable, struct symEntry *entry);
+void print_Type(struct Type *type, int fixed);
+void print_Table(struct symTable *symboltable,int scope);

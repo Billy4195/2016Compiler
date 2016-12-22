@@ -2,7 +2,7 @@
 #define Data
 typedef enum { VOID_t, INT_t, FLOAT_t, DOUBLE_t, BOOLEAN_t, ARRAY_t, STR_t, CONST_t, PARAM_t, FUNC_t, VAR_t} Kind_t;
 
-typedef enum { __TRUE, __FALSE } __BOOL_t;
+typedef enum { __FALSE, __TRUE } __BOOL_t;
 
 struct Dim{
     unsigned int capacity;
