@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "DataType.h"
 #include "symbolTable.h"
+#include "check.h"
 
 
 extern int linenum;
@@ -120,13 +121,25 @@ decl_and_def_list : decl_and_def_list var_decl
 				  ;
 
 funct_def : scalar_type ID L_PAREN R_PAREN {
-    struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __TRUE);
-    Table_push_back(symbolTable,new_node);
+    struct symEntry *new_node;
+    struct symEntry *node = find_ID_Decl(symbolTable, $2);
+    if(node){
+
+    }else{
+        new_node = createFunc_node($1, $2, NULL, level, __TRUE);
+        Table_push_back(symbolTable,new_node);
+    }
 }
       compound_statement 
 		  | scalar_type ID L_PAREN parameter_list R_PAREN { 
-    struct symEntry *new_node = createFunc_node($1, $2, $4, level, __TRUE);
-    Table_push_back(symbolTable,new_node);
+    struct symEntry *new_node;
+    struct symEntry *node = find_ID_Decl(symbolTable, $2);
+    if(node){
+
+    }else{
+        new_node = createFunc_node($1, $2, $4, level, __TRUE);
+        Table_push_back(symbolTable,new_node);
+    }
     struct Param *it = $4->head;
     for(;it != NULL; it = it->next){
         new_node = createParam_node(it, level+1);
@@ -135,13 +148,25 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
 }
       compound_statement 
 		  | VOID ID L_PAREN R_PAREN {
-    struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __TRUE);
-    Table_push_back(symbolTable,new_node);
+    struct symEntry *new_node;
+    struct symEntry *node = find_ID_Decl(symbolTable, $2);
+    if(node){
+
+    }else{
+        new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __TRUE);
+        Table_push_back(symbolTable,new_node);
+    }
 }
       compound_statement 
 		  | VOID ID L_PAREN parameter_list R_PAREN {
-    struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __TRUE);
-    Table_push_back(symbolTable,new_node);
+    struct symEntry *new_node;
+    struct symEntry *node = find_ID_Decl(symbolTable, $2);
+    if(node){
+
+    }else{
+        new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __TRUE);
+        Table_push_back(symbolTable,new_node);
+    }
     struct Param *it = $4->head;
     for(;it != NULL; it = it->next){
         new_node = createParam_node(it, level+1);
@@ -152,20 +177,40 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
 		  ;
 
 funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON {
-    struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __FALSE);
-    Table_push_back(symbolTable,new_node);
+    struct symEntry *node = find_ID_Decl(symbolTable, $2);
+    if(node){
+
+    }else{
+        struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __FALSE);
+        Table_push_back(symbolTable,new_node);
+    }
 }
 	 	   | scalar_type ID L_PAREN parameter_list R_PAREN SEMICOLON {
-    struct symEntry *new_node = createFunc_node($1, $2, $4, level, __FALSE);
-    Table_push_back(symbolTable,new_node);
+    struct symEntry *node = find_ID_Decl(symbolTable, $2);
+    if(node){
+
+    }else{
+        struct symEntry *new_node = createFunc_node($1, $2, $4, level, __FALSE);
+        Table_push_back(symbolTable,new_node);
+    }
 }
 		   | VOID ID L_PAREN R_PAREN SEMICOLON {
-    struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __FALSE);
-    Table_push_back(symbolTable,new_node);
+    struct symEntry *node = find_ID_Decl(symbolTable, $2);
+    if(node){
+
+    }else{
+        struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __FALSE);
+        Table_push_back(symbolTable,new_node);
+    }
 }
 		   | VOID ID L_PAREN parameter_list R_PAREN SEMICOLON {
-    struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __FALSE);
-    Table_push_back(symbolTable,new_node);
+    struct symEntry *node = find_ID_Decl(symbolTable, $2);
+    if(node){
+
+    }else{
+        struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __FALSE);
+        Table_push_back(symbolTable,new_node);
+    }
 }
 		   ;
 
