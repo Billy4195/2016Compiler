@@ -69,13 +69,8 @@ struct ConstAttr *new_ConstAttr(Kind_t kind, void *value){
     return new;
 }
 
-struct Type *new_Type(Kind_t kind){
-    struct Type *new = (struct Type*)malloc(sizeof(struct Type));
-    new->kind = kind;
-    new->isArray = __FALSE;
-    new->dim = NULL;
-
-    return new;
+void delete_ConstAttr(struct ConstAttr *attr){
+    free(attr);
 }
 
 struct Dim *new_Dim(int num){
@@ -88,6 +83,11 @@ struct Dim *new_Dim(int num){
     return new;
 }
 
+void delete_Dim(struct Dim *dim){
+    free(dim->numbers);
+    free(dim);
+}
+
 void Dim_add_new_num(struct Dim *dim,int num){
     if(dim->capacity == dim->filled){
         unsigned int *tmp = (unsigned int*)malloc(sizeof(unsigned int) * (dim->capacity + 2));
@@ -97,6 +97,22 @@ void Dim_add_new_num(struct Dim *dim,int num){
         dim->capacity += 2;
     }
     dim->numbers[dim->filled++] = num;
+}
+
+struct Type *new_Type(Kind_t kind){
+    struct Type *new = (struct Type*)malloc(sizeof(struct Type));
+    new->kind = kind;
+    new->isArray = __FALSE;
+    new->dim = NULL;
+
+    return new;
+}
+
+void delete_Type(struct Type *type){
+    if(type->dim){
+        delete_Dim(type->dim);
+    }
+    free(type);
 }
 
 struct ID_type *new_ID(char *name,struct Dim *dim){
@@ -130,11 +146,25 @@ struct Param *new_Param(struct Type *type, struct ID_type *id){
     return new;
 }
 
+void delete_Param(struct Param *param){
+    delete_Type(param->type);
+    free(param->name);
+}
+
 struct Param_list *new_Param_list(struct Param *param){
     struct Param_list *new = (struct Param_list*)malloc(sizeof(struct Param_list));
     new->head = param;
     new->tail = param;
     return new;
+}
+
+void delete_Param_list(struct Param_list *param_list){
+    struct Param *cur,*next;
+    for(cur = param_list->head;cur != NULL ;cur = next){
+        next = cur->next;
+        delete_Param(cur);
+    }
+    free(param_list);
 }
 
 void Param_list_push_back(struct Param_list *list, struct Param *param){
@@ -206,6 +236,29 @@ struct symEntry *createParam_node(struct Param *param,int level){
     new->isDef = __FALSE;
     new->kind = PARAM_t;
     return new;
+}
+
+void delete_symEntry(struct symEntry *entry){
+    free(entry->name);
+    delete_Type(entry->type);
+    if(entry->attr){
+        if(entry->kind == FUNC_t){
+            delete_Param_list(entry->attr->param_list);
+        }else if(entry->kind == CONST_t){
+            delete_ConstAttr(entry->attr->constVal);
+        }
+    }
+    free(entry);
+}
+
+void Table_pop_back(struct symTable *symboltable, int level){
+    int it = symboltable->filled - 1;
+    for(; it >= 0 ;it--){
+        if(symboltable->table[it]->level == level){
+            delete_symEntry( symboltable->table[it] );
+            symboltable->filled--;
+        }
+    }
 }
 
 void print_Type(struct Type *type,int fixed){

@@ -283,6 +283,7 @@ dim : dim ML_BRACE INT_CONST MR_BRACE {
 
 compound_statement : L_BRACE var_const_stmt_list R_BRACE {
     print_Table(symbolTable, level);
+    Table_pop_back(symbolTable, level);
     level -= 1;
 }
 				   ;

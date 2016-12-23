@@ -1,14 +1,21 @@
 #include "DataType.h"
 
+void init_Table(struct symTable *symtable);
+void Table_push_back(struct symTable *symboltable, struct symEntry *entry);
 struct ConstAttr *new_ConstAttr(Kind_t kind, void *value);
-struct Type *new_Type(Kind_t kind);
+void delete_ConstAttr(struct ConstAttr *attr);
 struct Dim *new_Dim(int num);
+void delete_Dim(struct Dim *dim);
 void Dim_add_new_num(struct Dim *dim,int num);
+struct Type *new_Type(Kind_t kind);
+void delete_Type(struct Type *type);
 struct ID_type *new_ID(char *name,struct Dim *dim);
 struct ID_list *new_ID_list(struct ID_type *id);
 void ID_list_push_back(struct ID_list *list, struct ID_type *id);
 struct Param *new_Param(struct Type *type, struct ID_type *id);
+void delete_Param(struct Param *param);
 struct Param_list *new_Param_list(struct Param *param);
+void delete_Param_list(struct Param_list *param_list);
 void Param_list_push_back(struct Param_list *list, struct Param *param);
 struct Const_type* new_Const(char *name,struct ConstAttr *attr);
 struct Const_list* new_Const_list(struct Const_type *con);
@@ -17,7 +24,7 @@ struct symEntry *createFunc_node(struct Type *type, char *name, struct Param_lis
 struct symEntry *createVar_node(struct Type *type,struct ID_type *id, int level);
 struct symEntry *createConst_node(struct Type *type,struct Const_type *con, int level);
 struct symEntry *createParam_node(struct Param *param,int level);
-void init_Table(struct symTable *symtable);
-void Table_push_back(struct symTable *symboltable, struct symEntry *entry);
+void delete_symEntry(struct symEntry *entry);
+void Table_pop_back(struct symTable *symboltable, int level);
 void print_Type(struct Type *type, int fixed);
 void print_Table(struct symTable *symboltable,int scope);
