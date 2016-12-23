@@ -149,8 +149,13 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     }
     struct Param *it = $4->head;
     for(;it != NULL; it = it->next){
-        new_node = createParam_node(it, level+1);
-        Table_push_back(symbolTable, new_node);
+        node = find_ID_Decl(symbolTable,it->name);
+        if(node){
+            Name_reuse(it->name);
+        }else{
+            new_node = createParam_node(it, level+1);
+            Table_push_back(symbolTable, new_node);
+        }
     }
 }
       compound_statement 
@@ -182,8 +187,13 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     }
     struct Param *it = $4->head;
     for(;it != NULL; it = it->next){
-        new_node = createParam_node(it, level+1);
-        Table_push_back(symbolTable, new_node);
+        node = find_ID_Decl(symbolTable,it->name);
+        if(node){
+            Name_reuse(it->name);
+        }else{
+            new_node = createParam_node(it, level+1);
+            Table_push_back(symbolTable, new_node);
+        }
     }
 }
       compound_statement 
@@ -250,11 +260,17 @@ parameter_list : parameter_list COMMA scalar_type ID {
 var_decl : scalar_type identifier_list SEMICOLON {
     struct ID_type *it = $2->head,*tmp;
     struct symEntry *new_node;
+    struct symEntry *node;
     for(;it != NULL ;it = tmp){
-        new_node = createVar_node($1, it, level);
-        Table_push_back(symbolTable, new_node);
-        tmp = it->next;
-        free(it);
+        node = find_ID_Decl(symbolTable,it->name);
+        if(node){
+            Name_reuse(it->name);
+        }else{
+            new_node = createVar_node($1, it, level);
+            Table_push_back(symbolTable, new_node);
+            tmp = it->next;
+            free(it);
+        }
     }
 }
 		 ;
@@ -300,11 +316,17 @@ literal_list : literal_list COMMA logical_expression
 const_decl : CONST scalar_type const_list SEMICOLON {
     struct Const_type *it = $3->head,*tmp;
     struct symEntry *new_node;
+    struct symEntry *node;
     for(;it != NULL ;it = tmp){
-        new_node = createConst_node($2, it, level);
-        Table_push_back(symbolTable, new_node);
-        tmp = it->next;
-        free(it);
+        node = find_ID_Decl(symbolTable,it->name);
+        if(node){
+            Name_reuse(it->name);
+        }else{
+            new_node = createConst_node($2, it, level);
+            Table_push_back(symbolTable, new_node);
+            tmp = it->next;
+            free(it);
+        }
     }
 }
        ;
