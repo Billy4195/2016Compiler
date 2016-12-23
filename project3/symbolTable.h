@@ -28,3 +28,5 @@ void delete_symEntry(struct symEntry *entry);
 void Table_pop_back(struct symTable *symboltable, int level);
 void print_Type(struct Type *type, int fixed);
 void print_Table(struct symTable *symboltable,int scope);
+int Type_equal(struct Type *t1,struct Type *t2);
+int Param_list_equal(struct Param_list *plist1,struct Param_list *plist2);

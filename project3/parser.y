@@ -10,6 +10,7 @@ extern int linenum;
 extern FILE	*yyin;
 extern char	*yytext;
 extern char buf[256];
+int error_happened;
 int level = 0;
 struct symTable *symbolTable;
 
@@ -124,7 +125,10 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     struct symEntry *new_node;
     struct symEntry *node = find_ID_Decl(symbolTable, $2);
     if(node){
-
+        int ret = check_Func_Type_and_Param_equal(node,$2,$1,NULL);
+        if(ret == 0){
+            node->isDef = __TRUE;
+        }
     }else{
         new_node = createFunc_node($1, $2, NULL, level, __TRUE);
         Table_push_back(symbolTable,new_node);
@@ -135,7 +139,10 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     struct symEntry *new_node;
     struct symEntry *node = find_ID_Decl(symbolTable, $2);
     if(node){
-
+        int ret = check_Func_Type_and_Param_equal(node,$2,$1,$4);
+        if(ret == 0){
+            node->isDef = __TRUE;
+        }
     }else{
         new_node = createFunc_node($1, $2, $4, level, __TRUE);
         Table_push_back(symbolTable,new_node);
@@ -151,7 +158,10 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     struct symEntry *new_node;
     struct symEntry *node = find_ID_Decl(symbolTable, $2);
     if(node){
-
+        int ret = check_Func_Type_and_Param_equal(node,$2,new_Type(VOID_t),NULL);
+        if(ret == 0){
+            node->isDef = __TRUE;
+        }
     }else{
         new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __TRUE);
         Table_push_back(symbolTable,new_node);
@@ -162,7 +172,10 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     struct symEntry *new_node;
     struct symEntry *node = find_ID_Decl(symbolTable, $2);
     if(node){
-
+        int ret = check_Func_Type_and_Param_equal(node,$2,new_Type(VOID_t),$4);
+        if(ret == 0){
+            node->isDef = __TRUE;
+        }
     }else{
         new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __TRUE);
         Table_push_back(symbolTable,new_node);
@@ -179,7 +192,8 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
 funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON {
     struct symEntry *node = find_ID_Decl(symbolTable, $2);
     if(node){
-
+        Redeclaration($2);
+        delete_Type($1);
     }else{
         struct symEntry *new_node = createFunc_node($1, $2, NULL, level, __FALSE);
         Table_push_back(symbolTable,new_node);
@@ -188,7 +202,9 @@ funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON {
 	 	   | scalar_type ID L_PAREN parameter_list R_PAREN SEMICOLON {
     struct symEntry *node = find_ID_Decl(symbolTable, $2);
     if(node){
-
+        Redeclaration($2);
+        delete_Type($1);
+        delete_Param_list($4);
     }else{
         struct symEntry *new_node = createFunc_node($1, $2, $4, level, __FALSE);
         Table_push_back(symbolTable,new_node);
@@ -197,7 +213,7 @@ funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON {
 		   | VOID ID L_PAREN R_PAREN SEMICOLON {
     struct symEntry *node = find_ID_Decl(symbolTable, $2);
     if(node){
-
+        Redeclaration($2);
     }else{
         struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, NULL, level, __FALSE);
         Table_push_back(symbolTable,new_node);
@@ -206,7 +222,8 @@ funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON {
 		   | VOID ID L_PAREN parameter_list R_PAREN SEMICOLON {
     struct symEntry *node = find_ID_Decl(symbolTable, $2);
     if(node){
-
+        Redeclaration($2);
+        delete_Param_list($4);
     }else{
         struct symEntry *new_node = createFunc_node(new_Type(VOID_t), $2, $4, level, __FALSE);
         Table_push_back(symbolTable,new_node);
@@ -343,21 +360,16 @@ simple_statement : variable_reference ASSIGN_OP logical_expression SEMICOLON
 				 | READ variable_reference SEMICOLON
 				 ;
 
-conditional_statement : IF L_PAREN logical_expression R_PAREN L_BRACE var_const_stmt_list R_BRACE
-					  | IF L_PAREN logical_expression R_PAREN 
-					  		L_BRACE var_const_stmt_list R_BRACE
+conditional_statement : IF L_PAREN logical_expression R_PAREN compound_statement
+					  | IF L_PAREN logical_expression R_PAREN compound_statement
 						ELSE
-							L_BRACE var_const_stmt_list R_BRACE
+              compound_statement
 					  ;
-while_statement : WHILE L_PAREN logical_expression R_PAREN
-					L_BRACE var_const_stmt_list R_BRACE
-				| DO L_BRACE
-					var_const_stmt_list
-				  R_BRACE WHILE L_PAREN logical_expression R_PAREN SEMICOLON
+while_statement : WHILE L_PAREN logical_expression R_PAREN compound_statement
+				| DO compound_statement WHILE L_PAREN logical_expression R_PAREN SEMICOLON
 				;
 
-for_statement : FOR L_PAREN initial_expression_list SEMICOLON control_expression_list SEMICOLON increment_expression_list R_PAREN 
-					L_BRACE var_const_stmt_list R_BRACE
+for_statement : FOR L_PAREN initial_expression_list SEMICOLON control_expression_list SEMICOLON increment_expression_list R_PAREN compound_statement
 			  ;
 
 initial_expression_list : initial_expression

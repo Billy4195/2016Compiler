@@ -383,3 +383,40 @@ void print_Table(struct symTable *symboltable,int scope){
     printf("======================================================================================\n");
 }
 
+int Type_equal(struct Type *t1,struct Type *t2){
+    if(t1->kind != t2->kind)
+        return 0;
+    if(t1->isArray != t2->isArray)
+        return 0;
+    if(t1->isArray){
+        int i;
+        if(t1->dim->filled != t2->dim->filled)
+            return 0;
+        for(i=0;i<t1->dim->filled;i++){
+            if(t1->dim->numbers[i] != t2->dim->numbers[i])
+                return 0;
+        }
+    }
+    return 1;
+}
+
+int Param_list_equal(struct Param_list *plist1,struct Param_list *plist2){
+    struct Param *cur1,*cur2;
+    if(plist1 == NULL || plist2 == NULL){
+        if(plist1 == plist2)
+            return 1;
+        else
+            return 0;
+    }
+    cur1 = plist1->head;
+    cur2 = plist2->head;
+    for(;cur1 != NULL && cur2 != NULL ; cur1 = cur1->next, cur2 = cur2->next){
+        if( !Type_equal(cur1->type,cur2->type) ){
+            return 0;
+        }
+    }
+    if(cur1 != NULL || cur2 != NULL)
+        return 0;
+    else
+        return 1;
+}
