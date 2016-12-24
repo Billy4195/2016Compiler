@@ -46,6 +46,18 @@ void Array_index_error(char *name){
     print_error("The dimension of array ",name," in declaration should be greater than 0");
 }
 
+void Not_func_invoke(char *name){
+    print_error("The invocation of ",name," is not Function type");
+}
+
+void Func_invoke_not_decl_or_def(char *name){
+    print_error("The function ",name," should be declared or defined before being used");
+}
+
+void Func_no_def(char *name){
+    print_error("The function ",name," is declared but not defined");
+}
+
 struct symEntry *find_ID_Decl(struct symTable *table,char *name){
     int cur=0;
     for(;cur < table->filled;cur++){
@@ -76,4 +88,15 @@ int check_Func_Type_and_Param_equal(struct symEntry *entry,char *name,struct Typ
     delete_Type(type); 
     Func_incompatible(name);
     return 3;
+}
+
+void check_Func_define(struct symTable *S_table){
+    int cur;
+    for(cur=0;cur < S_table->filled;cur++){
+        if(S_table->table[cur]->kind == FUNC_t){
+            if(S_table->table[cur]->isDef == __FALSE){
+                Func_no_def(S_table->table[cur]->name);
+            }
+        }
+    }
 }

@@ -104,6 +104,7 @@ struct symTable *symbolTable;
 
 program :  decl_list funct_def decl_and_def_list {
     print_Table(symbolTable,0);
+    check_Func_define(symbolTable);
 }
            ;
 
@@ -436,8 +437,28 @@ increment_expression : increment_expression COMMA variable_reference ASSIGN_OP l
 					 | variable_reference ASSIGN_OP logical_expression
 					 ;
 
-function_invoke_statement : ID L_PAREN logical_expression_list R_PAREN SEMICOLON
-						  | ID L_PAREN R_PAREN SEMICOLON
+function_invoke_statement : ID L_PAREN logical_expression_list R_PAREN SEMICOLON {
+    struct symEntry *node = find_ID_Decl(symbolTable,$1);
+    printf("%s\n",$1);
+    if(node){
+        if(node->kind != FUNC_t){
+            Not_func_invoke($1);
+        }
+    }else{
+        Func_invoke_not_decl_or_def($1);
+    }
+}
+						  | ID L_PAREN R_PAREN SEMICOLON {
+    struct symEntry *node = find_ID_Decl(symbolTable,$1);
+    printf("%s\n",$1);
+    if(node){
+        if(node->kind != FUNC_t){
+            Not_func_invoke($1);
+        }
+    }else{
+        Func_invoke_not_decl_or_def($1);
+    }
+}
 						  ;
 
 jump_statement : CONTINUE SEMICOLON
