@@ -207,6 +207,10 @@ struct symEntry *createFunc_node(struct Type *type,char *name,struct Param_list 
 struct symEntry *createVar_node(struct Type *type,struct ID_type *id, int level){
     struct symEntry *new = (struct symEntry*)malloc(sizeof(struct symEntry));
     new->type = type;
+    if(id->dim){
+        new->type->isArray = __TRUE;
+        new->type->dim = id->dim;
+    }
     new->name = id->name;
     new->attr = NULL;
     new->level = level;
