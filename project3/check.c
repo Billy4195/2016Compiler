@@ -42,6 +42,10 @@ void Func_incompatible(char *name){
     linenum++;
 }
 
+void Array_index_error(char *name){
+    print_error("The dimension of array ",name," in declaration should be greater than 0");
+}
+
 struct symEntry *find_ID_Decl(struct symTable *table,char *name){
     int cur=0;
     for(;cur < table->filled;cur++){

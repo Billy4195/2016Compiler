@@ -342,16 +342,29 @@ const_list : const_list COMMA ID ASSIGN_OP literal_const{
 		   ;
 
 array_decl : ID dim {
-    $$ = new_ID($1,$2);
+    if($2 == NULL){
+        Array_index_error($1);
+        $$ = NULL;
+    }else{
+        $$ = new_ID($1,$2);
+    }
 }
 		   ;
 
 dim : dim ML_BRACE INT_CONST MR_BRACE {
-    Dim_add_new_num($1,$3);
-    $$ = $1;
+    if($1 == NULL || $3 == 0){
+        $$ = NULL;
+    }else{
+        Dim_add_new_num($1,$3);
+        $$ = $1;
+    }
 }
 	| ML_BRACE INT_CONST MR_BRACE {
-    $$ = new_Dim($2);
+    if($2 == 0){
+        $$ = NULL;
+    }else{
+        $$ = new_Dim($2);
+    }
 }
 	;
 

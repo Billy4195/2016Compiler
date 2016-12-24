@@ -131,11 +131,18 @@ struct ID_list *new_ID_list(struct ID_type *id){
 }
 
 void ID_list_push_back(struct ID_list *list, struct ID_type *id){
-    list->tail->next = id;
+    if(list->tail){
+        list->tail->next = id;
+    }else{
+        list->head = id;
+    }
     list->tail = id;
 }
 
 struct Param *new_Param(struct Type *type, struct ID_type *id){
+    if(id == NULL){
+        return NULL;
+    }
     struct Param *new = (struct Param*)malloc(sizeof(struct Param));
     new->type = type;
     new->type->isArray = id->dim != NULL ? __TRUE : __FALSE;
@@ -168,7 +175,11 @@ void delete_Param_list(struct Param_list *param_list){
 }
 
 void Param_list_push_back(struct Param_list *list, struct Param *param){
-    list->tail->next = param;
+    if(list->tail){
+        list->tail->next = param;
+    }else{
+        list->head = param;
+    }
     list->tail = param;
 }
 
