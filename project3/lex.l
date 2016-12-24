@@ -113,12 +113,12 @@ id *new_id();
 	}
 <SYMBOL>"on"	{
 		LIST;
-		Opt_Statistic = 1;
+		Opt_Symbol = 1;
 		BEGIN OTHER;
 	}
 <SYMBOL>"off"	{
 		LIST;
-		Opt_Statistic = 0;
+		Opt_Symbol = 0;
 		BEGIN OTHER;
 	}
 <SYMBOL>[\t ]+	{

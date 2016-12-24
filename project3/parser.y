@@ -10,6 +10,7 @@ extern int linenum;
 extern FILE	*yyin;
 extern char	*yytext;
 extern char buf[256];
+extern int Opt_Symbol;
 int error_happened;
 int level = 0;
 struct symTable *symbolTable;
@@ -103,7 +104,9 @@ struct symTable *symbolTable;
 %%
 
 program :  decl_list funct_def decl_and_def_list {
-    print_Table(symbolTable,0);
+    if(Opt_Symbol){
+        print_Table(symbolTable,0);
+    }
     check_Func_define(symbolTable);
 }
            ;
@@ -370,7 +373,9 @@ dim : dim ML_BRACE INT_CONST MR_BRACE {
 	;
 
 compound_statement : { level++; } L_BRACE var_const_stmt_list R_BRACE {
-    print_Table(symbolTable, level);
+    if(Opt_Symbol){
+        print_Table(symbolTable, level);
+    }
     Table_pop_back(symbolTable, level);
     level -= 1;
 }
@@ -439,7 +444,6 @@ increment_expression : increment_expression COMMA variable_reference ASSIGN_OP l
 
 function_invoke_statement : ID L_PAREN logical_expression_list R_PAREN SEMICOLON {
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
-    printf("%s\n",$1);
     if(node){
         if(node->kind != FUNC_t){
             Not_func_invoke($1);
@@ -450,7 +454,6 @@ function_invoke_statement : ID L_PAREN logical_expression_list R_PAREN SEMICOLON
 }
 						  | ID L_PAREN R_PAREN SEMICOLON {
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
-    printf("%s\n",$1);
     if(node){
         if(node->kind != FUNC_t){
             Not_func_invoke($1);
