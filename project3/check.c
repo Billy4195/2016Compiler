@@ -58,6 +58,14 @@ void Func_no_def(char *name){
     print_error("The function ",name," is declared but not defined");
 }
 
+void Undef_reference(char *name){
+    print_error("Undefined reference to \'",name,"\'");
+}
+
+void Expression_operand_error(char *op){
+    print_error("The operand(s) of the operator ",strdup(op)," is wrong");
+}
+
 struct symEntry *find_ID_Decl(struct symTable *table,char *name){
     int cur=0;
     for(;cur < table->filled;cur++){
@@ -99,4 +107,62 @@ void check_Func_define(struct symTable *S_table){
             }
         }
     }
+}
+
+struct ConstAttr *check_boolean_attr(struct ConstAttr *attr){
+    if(!attr || attr->kind != BOOLEAN_t){
+        return NULL;
+    }else{
+        return attr;
+    }
+}
+
+struct ConstAttr *check_arithmetic_attr(struct ConstAttr *attr){
+    if(!attr || (attr->kind != INT_t && attr->kind != FLOAT_t && attr->kind != DOUBLE_t)){
+        return NULL;
+    }else{
+        return attr;
+    }
+}
+
+struct ConstAttr *check_logical_operand(struct ConstAttr *op1,struct ConstAttr *op2){
+    if(check_boolean_attr(op1) == NULL){
+        return NULL;
+    }
+    if(check_boolean_attr(op2) == NULL){
+        return NULL;
+    }
+    return new_ConstAttr(BOOLEAN_t,NULL,__FALSE);
+}
+
+struct ConstAttr *check_relation_operand(struct ConstAttr *operand1,char *operator,struct ConstAttr *operand2){
+    if( (check_boolean_attr(operand1) || check_arithmetic_attr(operand1)) && (check_boolean_attr(operand2) || check_arithmetic_attr(operand2))){
+        if(strcmp(operator,"==") == 0 || strcmp(operator,"!=") == 0){  //EQ or NE
+            return new_ConstAttr(BOOLEAN_t,NULL,__FALSE);
+        }else if(check_arithmetic_attr(operand2)){
+            return new_ConstAttr(BOOLEAN_t,NULL,__FALSE);
+        }
+    }
+    return NULL;
+}
+
+struct ConstAttr *check_arithmetic_operand(struct ConstAttr *operand1,char *operator,struct ConstAttr *operand2){
+    if(check_arithmetic_attr(operand1) && check_arithmetic_attr(operand2)){
+        if(operand1->kind == INT_t && operand2->kind == INT_t){
+            return new_ConstAttr(INT_t,NULL,__FALSE);
+        }else if(operand1->kind == DOUBLE_t || operand2->kind == DOUBLE_t){
+            if(strcmp(operator,"%")){ // != %
+                return new_ConstAttr(DOUBLE_t,NULL,__FALSE);
+            }else{
+                return NULL;
+            }
+        }else{
+            if(strcmp(operator,"%")){       // != %
+                return new_ConstAttr(FLOAT_t,NULL,__FALSE);
+            }else{
+                return NULL;
+            }
+        }
+    }
+    return NULL;
 }

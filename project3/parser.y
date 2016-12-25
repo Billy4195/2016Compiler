@@ -4,7 +4,7 @@
 #include "DataType.h"
 #include "symbolTable.h"
 #include "check.h"
-
+//TODO variable unique in "scope"
 
 extern int linenum;
 extern FILE	*yyin;
@@ -30,13 +30,14 @@ struct symTable *symbolTable;
     struct Const_list *const_list;
 }
 
-%type <constAttr> literal_const
-%type <type> scalar_type
+%type <constAttr> literal_const logical_expression factor array_list variable_reference logical_term logical_factor relation_expression arithmetic_expression term
+%type <type> scalar_type 
 %type <dim> dim
 %type <id> array_decl
 %type <id_list> identifier_list
 %type <param_list> parameter_list
 %type <const_list> const_list
+%type <strval> relation_operator
 
 %token	<strval> ID
 %token	<intval> INT_CONST
@@ -469,63 +470,226 @@ jump_statement : CONTINUE SEMICOLON
 			   | RETURN logical_expression SEMICOLON
 			   ;
 
-variable_reference : array_list
-				   | ID
+variable_reference : array_list {
+    $$ = $1;
+}
+				   | ID {
+    struct symEntry *node = find_ID_Decl(symbolTable,$1);
+    if(node){
+        //check variable
+        $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+    }else{
+        Undef_reference($1);
+        $$ = NULL;
+    }
+}
 				   ;
 
 
-logical_expression : logical_expression OR_OP logical_term
-				   | logical_term
+logical_expression : logical_expression OR_OP logical_term {
+    $$ = check_logical_operand($1,$3);
+    if($$ == NULL){
+        Expression_operand_error("||");
+    }
+}
+				   | logical_term {
+    $$ = $1;
+}
 				   ;
 
-logical_term : logical_term AND_OP logical_factor
-			 | logical_factor
+logical_term : logical_term AND_OP logical_factor {
+    $$ = check_logical_operand($1,$3);
+    if($$ == NULL){
+        Expression_operand_error("&&");
+    }
+}
+			 | logical_factor {
+    $$ = $1;
+}
 			 ;
 
-logical_factor : NOT_OP logical_factor
-			   | relation_expression
+logical_factor : NOT_OP logical_factor {
+    $$ = check_boolean_attr($2);
+    if($$ == NULL){
+        Expression_operand_error("!");
+    }
+}
+			   | relation_expression {
+    $$ = $1;
+}
 			   ;
 
-relation_expression : arithmetic_expression relation_operator arithmetic_expression
-					| arithmetic_expression 
+relation_expression : arithmetic_expression relation_operator arithmetic_expression {
+    $$ = check_relation_operand($1,$2,$3);
+    if($$ == NULL){
+        Expression_operand_error($2);
+    }
+}
+					| arithmetic_expression {
+    $$ = $1;
+}
 					;
 
-relation_operator : LT_OP
-				  | LE_OP
-				  | EQ_OP
-				  | GE_OP
-				  | GT_OP
-				  | NE_OP
+relation_operator : LT_OP {
+    $$ = "<";
+}
+				  | LE_OP {
+    $$ = "<=";
+}
+				  | EQ_OP {
+    $$ = "==";
+}
+				  | GE_OP {
+    $$ = ">=";
+}
+				  | GT_OP {
+    $$ = ">";
+}
+				  | NE_OP {
+    $$ = "!=";
+}
 				  ;
 
-arithmetic_expression : arithmetic_expression ADD_OP term
-		   | arithmetic_expression SUB_OP term
-                   | relation_expression
-		   | term
+arithmetic_expression : arithmetic_expression ADD_OP term {
+    $$ = check_arithmetic_operand($1,"+",$3);
+    if($$ == NULL){
+        Expression_operand_error("+");
+    }
+}
+		   | arithmetic_expression SUB_OP term {
+    $$ = check_arithmetic_operand($1,"-",$3);
+    if($$ == NULL){
+        Expression_operand_error("-");
+    }
+}
+       | relation_expression {
+    $$ = $1;
+}
+		   | term {
+    $$ = $1;
+}
 		   ;
 
-term : term MUL_OP factor
-     | term DIV_OP factor
-	 | term MOD_OP factor
-	 | factor
+term : term MUL_OP factor {
+    $$ = check_arithmetic_operand($1,"*",$3);
+    if($$ == NULL){
+        Expression_operand_error("*");
+    }
+}
+   | term DIV_OP factor {
+    $$ = check_arithmetic_operand($1,"/",$3);
+    if($$ == NULL){
+        Expression_operand_error("/");
+    }
+}
+	 | term MOD_OP factor {
+    $$ = check_arithmetic_operand($1,"%",$3);
+    if($$ == NULL){
+        Expression_operand_error("%");
+    }
+}
+	 | factor {
+    $$ = $1;
+}
 	 ;
 
-factor : variable_reference
-	   | SUB_OP factor
-	   | L_PAREN logical_expression R_PAREN
-	   | SUB_OP L_PAREN logical_expression R_PAREN
-	   | ID L_PAREN logical_expression_list R_PAREN
-	   | ID L_PAREN R_PAREN
-	   | literal_const
-	   | SUB_OP ID L_PAREN logical_expression R_PAREN
-	   | SUB_OP ID L_PAREN R_PAREN
+factor : variable_reference {
+    $$ = $1;
+}
+	   | SUB_OP factor {
+    if($2){
+        $2->minus ^= __TRUE;
+    }
+    $$ = $2;
+}
+	   | L_PAREN logical_expression R_PAREN {
+    $$ = $2;
+}
+	   | SUB_OP L_PAREN logical_expression R_PAREN {
+    $3->minus ^= __TRUE; //xor 1 (true -> false and false -> true)
+    $$ = $3;
+}
+	   | ID L_PAREN logical_expression_list R_PAREN {
+    struct symEntry *node = find_ID_Decl(symbolTable,$1);
+    if(node){
+        if(node->kind != FUNC_t){
+            Not_func_invoke($1);
+            $$ = NULL;
+        }else{
+            //TODO check actual param
+            $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+        }
+    }else{
+        Func_invoke_not_decl_or_def($1);
+        $$ = NULL;
+    }
+}
+	   | ID L_PAREN R_PAREN {
+    struct symEntry *node = find_ID_Decl(symbolTable,$1);
+    if(node){
+        if(node->kind != FUNC_t){
+            Not_func_invoke($1);
+            $$ = NULL;
+        }else{
+            //TODO check actual param
+            $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+        }
+    }else{
+        Func_invoke_not_decl_or_def($1);
+        $$ = NULL;
+    }
+}
+	   | literal_const {
+    //TODO check type
+    $$ = new_ConstAttr($1->kind,NULL,$1->minus);
+}
+	   | SUB_OP ID L_PAREN logical_expression R_PAREN {
+    struct symEntry *node = find_ID_Decl(symbolTable,$2);
+    if(node){
+        if(node->kind != FUNC_t){
+            Not_func_invoke($2);
+            $$ = NULL;
+        }else{
+            //TODO check actual param
+            $$ = new_ConstAttr(node->type->kind,NULL,__TRUE);
+        }
+    }else{
+        Func_invoke_not_decl_or_def($2);
+        $$ = NULL;
+    }
+}
+	   | SUB_OP ID L_PAREN R_PAREN {
+    struct symEntry *node = find_ID_Decl(symbolTable,$2);
+    if(node){
+        if(node->kind != FUNC_t){
+            Not_func_invoke($2);
+            $$ = NULL;
+        }else{
+            //TODO check actual param
+            $$ = new_ConstAttr(node->type->kind,NULL,__TRUE);
+        }
+    }else{
+        Func_invoke_not_decl_or_def($2);
+        $$ = NULL;
+    }
+}
 	   ;
 
 logical_expression_list : logical_expression_list COMMA logical_expression
 						| logical_expression
 						;
 
-array_list : ID dimension
+array_list : ID dimension {
+    //TODO dimension check
+    struct symEntry *node = find_ID_Decl(symbolTable,$1);
+    if(node){
+        //check Array
+        $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+    }else{
+        Undef_reference($1);
+        $$ = NULL;
+    }
+}
 		   ;
 
 dimension : dimension ML_BRACE logical_expression MR_BRACE		   
@@ -553,38 +717,38 @@ scalar_type : INT {
  
 literal_const : INT_CONST {
     int tmp = $1;
-    $$ = new_ConstAttr(INT_t,(void*)&tmp);
+    $$ = new_ConstAttr(INT_t,(void*)&tmp,__FALSE);
 }
 			  | SUB_OP INT_CONST {
-    int tmp = -$2;
-    $$ = new_ConstAttr(INT_t,(void*)&tmp);
+    int tmp = $2;
+    $$ = new_ConstAttr(INT_t,(void*)&tmp,__TRUE);
 }
 			  | FLOAT_CONST {
     float tmp = $1;
-    $$ = new_ConstAttr(FLOAT_t,(void*)&tmp);
+    $$ = new_ConstAttr(FLOAT_t,(void*)&tmp,__FALSE);
 }
 			  | SUB_OP FLOAT_CONST {
-    float tmp = -$2;
-    $$ = new_ConstAttr(FLOAT_t,(void*)&tmp);
+    float tmp = $2;
+    $$ = new_ConstAttr(FLOAT_t,(void*)&tmp,__TRUE);
 }
 			  | SCIENTIFIC {
     double tmp = $1;
-    $$ = new_ConstAttr(DOUBLE_t,(void*)&tmp);
+    $$ = new_ConstAttr(DOUBLE_t,(void*)&tmp,__FALSE);
 }
 			  | SUB_OP SCIENTIFIC {
-    double tmp = -$2;
-    $$ = new_ConstAttr(DOUBLE_t,(void*)&tmp);
+    double tmp = $2;
+    $$ = new_ConstAttr(DOUBLE_t,(void*)&tmp,__TRUE);
 }
 			  | STR_CONST {
-    $$ = new_ConstAttr(STR_t,(void*)$1);
+    $$ = new_ConstAttr(STR_t,(void*)$1,__FALSE);
 }
 			  | TRUE {
     int tmp = 1;
-    $$ = new_ConstAttr(BOOLEAN_t,(void*)&tmp);
+    $$ = new_ConstAttr(BOOLEAN_t,(void*)&tmp,__FALSE);
 }
 			  | FALSE {
     int tmp = 0;
-    $$ = new_ConstAttr(BOOLEAN_t,(void*)&tmp);
+    $$ = new_ConstAttr(BOOLEAN_t,(void*)&tmp,__FALSE);
 }
 			  ;
 %%

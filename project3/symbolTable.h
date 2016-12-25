@@ -2,7 +2,7 @@
 
 void init_Table(struct symTable *symtable);
 void Table_push_back(struct symTable *symboltable, struct symEntry *entry);
-struct ConstAttr *new_ConstAttr(Kind_t kind, void *value);
+struct ConstAttr *new_ConstAttr(Kind_t kind, void *value, __BOOL_t minus);
 void delete_ConstAttr(struct ConstAttr *attr);
 struct Dim *new_Dim(int num);
 void delete_Dim(struct Dim *dim);

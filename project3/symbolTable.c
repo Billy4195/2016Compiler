@@ -20,51 +20,36 @@ void Table_push_back(struct symTable *symboltable, struct symEntry *entry){
     symboltable->table[symboltable->filled++] = entry;
 }
 
-struct ConstAttr *new_ConstAttr(Kind_t kind, void *value){
+struct ConstAttr *new_ConstAttr(Kind_t kind, void *value, __BOOL_t minus){
     struct ConstAttr *new = (struct ConstAttr*) malloc(sizeof(struct ConstAttr));
     new->kind = kind;
-    switch(kind){
-    case INT_t:{
-        int tmp = *(int *)value;
-        if(tmp < 0){
-            new->value.intval = -tmp;
-            new->minus = __TRUE;
-        }else{
+    new->minus = minus;
+    if(value){
+        switch(kind){
+        case INT_t:{
+            int tmp = *(int *)value;
             new->value.intval = tmp;
-            new->minus = __FALSE;
+            break;
         }
-        break;
-    }
-    case FLOAT_t:{
-        float tmp = *(float *)value;
-        if(tmp < 0){
-            new->value.floval = -tmp;
-            new->minus = __TRUE;
-        }else{
+        case FLOAT_t:{
+            float tmp = *(float *)value;
             new->value.floval = tmp;
-            new->minus = __FALSE;
+            break;
         }
-        break;
-    }
-    case DOUBLE_t:{
-        double tmp = *(double *)value;
-        if(tmp < 0){
-            new->value.douval = -tmp;
-            new->minus = __TRUE;
-        }else{
+        case DOUBLE_t:{
+            double tmp = *(double *)value;
             new->value.douval = tmp;
-            new->minus = __FALSE;
+            break;
         }
-        break;
-    }
-    case STR_t:{
-        new->value.strval = (char*)value;
-        break;
-    }
-    case BOOLEAN_t:{
-        new->value.bval = *(int*)value;
-        break;
-    }
+        case STR_t:{
+            new->value.strval = (char*)value;
+            break;
+        }
+        case BOOLEAN_t:{
+            new->value.bval = *(int*)value;
+            break;
+        }
+        }
     }
     return new;
 }
