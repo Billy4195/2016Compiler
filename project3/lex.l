@@ -370,7 +370,7 @@ id *new_id();
 		if(Opt_Statistic){
 			set(&id_head,yytext);
 		}
-		tokenString("id",yytext);yylval.strval = strdup(yytext);	return ID;
+		tokenString("id",yytext);yylval.strval = strndup(yytext,32);	return ID;
 	}
 .	{
 		printf("Error at line %d: %s\n",linenum, yytext);
