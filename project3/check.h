@@ -12,6 +12,8 @@ void Func_invoke_not_decl_or_def(char *name);
 void Func_no_def(char *name);
 void Undef_reference(char *name);
 void Expression_operand_error(char *op);
+void Func_reference(char *name);
+void Not_array_reference(char *name);
 struct symEntry *find_ID_Decl(struct symTable *table,char *name);
 int check_Func_Type_and_Param_equal(struct symEntry *entry,char *name,struct Type *type,struct Param_list *param_list);
 void check_Func_define(struct symTable *S_table);

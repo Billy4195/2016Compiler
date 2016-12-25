@@ -66,6 +66,14 @@ void Expression_operand_error(char *op){
     print_error("The operand(s) of the operator ",strdup(op)," is wrong");
 }
 
+void Func_reference(char *name){
+    print_error("Function ",name," can't be reference as a variable");
+}
+
+void Not_array_reference(char *name){
+    print_error("The symbol ",name," is not array type");
+}
+
 struct symEntry *find_ID_Decl(struct symTable *table,char *name){
     int cur=table->filled-1;
     for(;cur >= 0;cur--){

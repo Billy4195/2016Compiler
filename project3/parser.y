@@ -475,8 +475,11 @@ variable_reference : array_list {
 				   | ID {
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
     if(node){
-        //check variable
-        $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+        if(node->kind == VAR_t || node->kind == CONST_t || node->kind == PARAM_t){
+            $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+        }else{
+            Func_reference($1);
+        }
     }else{
         Undef_reference($1);
         $$ = NULL;
@@ -649,7 +652,15 @@ array_list : ID dimension {
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
     if(node){
         //check Array
-        $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+        if(node->kind == VAR_t || node->kind == CONST || node->kind == PARAM_t){
+            if(node->type->isArray){
+                $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+            }else{
+                Not_array_reference($1);
+            }
+        }else{
+            Func_reference($1);
+        }
     }else{
         Undef_reference($1);
         $$ = NULL;
