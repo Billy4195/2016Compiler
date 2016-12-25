@@ -86,6 +86,14 @@ void Array_init_oversize(char *name){
     print_error("The initialization of array ",strdup(name)," is unmatch the declared size");
 }
 
+void Array_assign(char *name){
+    print_error("The assignment of array ",strdup(name)," is not allowed");
+}
+
+void Array_operation(char *name){
+    print_error("The operation of array ",strdup(name)," is not allowed");
+}
+
 struct symEntry *find_ID_Decl(struct symTable *table,char *name){
     int cur=table->filled-1;
     for(;cur >= 0;cur--){
@@ -187,9 +195,11 @@ struct ConstAttr *check_arithmetic_operand(struct ConstAttr *operand1,char *oper
     return NULL;
 }
 
-void check_const_assign(struct symEntry *node){
+void check_const_array_assign(struct symEntry *node){
     if(node && node->kind == CONST_t){
         Const_assign(node->name);
+    }else if(node && node->type->isArray){
+        Array_assign(node->name);
     }
 }
 
@@ -199,7 +209,6 @@ void check_array_init(struct ID_type *id,int init_array){
     for(i=0;i<id->dim->filled;i++){
         total *= id->dim->numbers[i];
     }
-    printf("%d %d\n",init_array,total);
     if(init_array > total){
         Array_init_oversize(id->name);
     }

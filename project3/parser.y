@@ -418,7 +418,7 @@ statement : compound_statement
 		  ;		
 
 simple_statement : variable_reference ASSIGN_OP logical_expression SEMICOLON {
-    check_const_assign($1);
+    check_const_array_assign($1);
 }
 				 | PRINT logical_expression SEMICOLON
 				 | READ variable_reference SEMICOLON
@@ -441,24 +441,24 @@ initial_expression_list : initial_expression
 				        ;
 
 initial_expression : initial_expression COMMA variable_reference ASSIGN_OP logical_expression {
-    check_const_assign($3);
+    check_const_array_assign($3);
 }
 				   | initial_expression COMMA logical_expression
 				   | logical_expression
 				   | variable_reference ASSIGN_OP logical_expression {
-    check_const_assign($1);
+    check_const_array_assign($1);
 }
 control_expression_list : control_expression
 				  		|
 				  		;
 
 control_expression : control_expression COMMA variable_reference ASSIGN_OP logical_expression {
-    check_const_assign($3);
+    check_const_array_assign($3);
 }
 				   | control_expression COMMA logical_expression
 				   | logical_expression
 				   | variable_reference ASSIGN_OP logical_expression {
-    check_const_assign($1);
+    check_const_array_assign($1);
 }
 				   ;
 
@@ -467,12 +467,12 @@ increment_expression_list : increment_expression
 						  ;
 
 increment_expression : increment_expression COMMA variable_reference ASSIGN_OP logical_expression {
-    check_const_assign($3);
+    check_const_array_assign($3);
 }
 					 | increment_expression COMMA logical_expression
 					 | logical_expression
 					 | variable_reference ASSIGN_OP logical_expression {
-    check_const_assign($1);
+    check_const_array_assign($1);
 }
 					 ;
 
@@ -510,7 +510,12 @@ variable_reference : array_list {
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
     if(node){
         if(node->kind == VAR_t || node->kind == CONST_t || node->kind == PARAM_t){
-            $$ = node;
+            if(node->type->isArray){
+                Array_operation(node->name); 
+                $$ = NULL;
+            }else{
+                $$ = node;
+            }
         }else{
             Func_reference($1);
             $$ = NULL;
