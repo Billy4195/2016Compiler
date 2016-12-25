@@ -79,7 +79,11 @@ void Const_assign(char *name){
 }
 
 void Array_over_subscripted(char *name){
-    print_error("The dimesion to subscript array ",name," is unmatch to its declaration");
+    print_error("The dimesion to subscript array ",strdup(name)," is unmatch to its declaration");
+}
+
+void Array_init_oversize(char *name){
+    print_error("The initialization of array ",strdup(name)," is unmatch the declared size");
 }
 
 struct symEntry *find_ID_Decl(struct symTable *table,char *name){
@@ -186,5 +190,17 @@ struct ConstAttr *check_arithmetic_operand(struct ConstAttr *operand1,char *oper
 void check_const_assign(struct symEntry *node){
     if(node && node->kind == CONST_t){
         Const_assign(node->name);
+    }
+}
+
+void check_array_init(struct ID_type *id,int init_array){
+    int total = 1;
+    int i;
+    for(i=0;i<id->dim->filled;i++){
+        total *= id->dim->numbers[i];
+    }
+    printf("%d %d\n",init_array,total);
+    if(init_array > total){
+        Array_init_oversize(id->name);
     }
 }

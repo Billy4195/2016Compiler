@@ -16,6 +16,7 @@ void Func_reference(char *name);
 void Not_array_reference(char *name);
 void Const_assign(char *name);
 void Array_over_subscripted(char *name);
+void Array_init_oversize(char *name);
 struct symEntry *find_ID_Decl(struct symTable *table,char *name);
 int check_Func_Type_and_Param_equal(struct symEntry *entry,char *name,struct Type *type,struct Param_list *param_list);
 void check_Func_define(struct symTable *S_table);
@@ -25,3 +26,4 @@ struct ConstAttr *check_logical_operand(struct ConstAttr *op1,struct ConstAttr *
 struct ConstAttr *check_relation_operand(struct ConstAttr *operand1,char *operator,struct ConstAttr *operand2);
 struct ConstAttr *check_arithmetic_operand(struct ConstAttr *operand1,char *operator,struct ConstAttr *operand2);
 void check_const_assign(struct symEntry *node);
+void check_array_init(struct ID_type *id,int init_array);

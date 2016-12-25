@@ -39,7 +39,7 @@ struct symTable *symbolTable;
 %type <param_list> parameter_list
 %type <const_list> const_list
 %type <strval> relation_operator
-%type <intval> dimension
+%type <intval> dimension literal_list initial_array
 
 %token	<strval> ID
 %token	<intval> INT_CONST
@@ -291,6 +291,7 @@ identifier_list : identifier_list COMMA ID {
     $$ = $1;
 }
 				| identifier_list COMMA array_decl ASSIGN_OP initial_array {
+    check_array_init($3,$5);
     ID_list_push_back($1, $3);
     $$ = $1;
 }
@@ -299,6 +300,7 @@ identifier_list : identifier_list COMMA ID {
     $$ = $1;
 }
 				| array_decl ASSIGN_OP initial_array {
+    check_array_init($1,$3);
     $$ = new_ID_list( $1 );
 }
 				| array_decl {
@@ -312,12 +314,28 @@ identifier_list : identifier_list COMMA ID {
 }
 				;
 
-initial_array : L_BRACE literal_list R_BRACE
+initial_array : L_BRACE literal_list R_BRACE {
+    $$ = $2;
+}
 			  ;
 
-literal_list : literal_list COMMA logical_expression
-			 | logical_expression
-                         | 
+literal_list : literal_list COMMA logical_expression {
+    if($3){
+        $$ = $1 + 1;
+    }else{
+        $$ = $1;
+    }
+}
+			 | logical_expression {
+    if($1){
+        $$ = 1;
+    }else{
+        $$ = 0;
+    }
+}
+       | {
+        $$ = 0;
+}
 			 ;
 
 const_decl : CONST scalar_type const_list SEMICOLON {
