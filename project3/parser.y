@@ -27,12 +27,14 @@ struct symTable *symbolTable;
     struct ID_list *id_list;
     struct Param_list *param_list;
     struct Const_list *const_list;
+    struct symEntry *node;
 }
 
-%type <constAttr> literal_const logical_expression factor array_list variable_reference logical_term logical_factor relation_expression arithmetic_expression term
+%type <constAttr> literal_const logical_expression factor logical_term logical_factor relation_expression arithmetic_expression term
+%type <node> variable_reference array_list
 %type <type> scalar_type 
 %type <dim> dim
-%type <id> array_decl
+%type <id> array_decl 
 %type <id_list> identifier_list
 %type <param_list> parameter_list
 %type <const_list> const_list
@@ -396,7 +398,9 @@ statement : compound_statement
 		  | jump_statement
 		  ;		
 
-simple_statement : variable_reference ASSIGN_OP logical_expression SEMICOLON
+simple_statement : variable_reference ASSIGN_OP logical_expression SEMICOLON {
+    check_const_assign($1);
+}
 				 | PRINT logical_expression SEMICOLON
 				 | READ variable_reference SEMICOLON
 				 ;
@@ -417,29 +421,40 @@ initial_expression_list : initial_expression
 				  	    |
 				        ;
 
-initial_expression : initial_expression COMMA variable_reference ASSIGN_OP logical_expression
+initial_expression : initial_expression COMMA variable_reference ASSIGN_OP logical_expression {
+    check_const_assign($3);
+}
 				   | initial_expression COMMA logical_expression
 				   | logical_expression
-				   | variable_reference ASSIGN_OP logical_expression
-
+				   | variable_reference ASSIGN_OP logical_expression {
+    check_const_assign($1);
+}
 control_expression_list : control_expression
 				  		|
 				  		;
 
-control_expression : control_expression COMMA variable_reference ASSIGN_OP logical_expression
+control_expression : control_expression COMMA variable_reference ASSIGN_OP logical_expression {
+    check_const_assign($3);
+}
 				   | control_expression COMMA logical_expression
 				   | logical_expression
-				   | variable_reference ASSIGN_OP logical_expression
+				   | variable_reference ASSIGN_OP logical_expression {
+    check_const_assign($1);
+}
 				   ;
 
 increment_expression_list : increment_expression 
 						  |
 						  ;
 
-increment_expression : increment_expression COMMA variable_reference ASSIGN_OP logical_expression
+increment_expression : increment_expression COMMA variable_reference ASSIGN_OP logical_expression {
+    check_const_assign($3);
+}
 					 | increment_expression COMMA logical_expression
 					 | logical_expression
-					 | variable_reference ASSIGN_OP logical_expression
+					 | variable_reference ASSIGN_OP logical_expression {
+    check_const_assign($1);
+}
 					 ;
 
 function_invoke_statement : ID L_PAREN logical_expression_list R_PAREN SEMICOLON {
@@ -476,9 +491,10 @@ variable_reference : array_list {
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
     if(node){
         if(node->kind == VAR_t || node->kind == CONST_t || node->kind == PARAM_t){
-            $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+            $$ = node;
         }else{
             Func_reference($1);
+            $$ = NULL;
         }
     }else{
         Undef_reference($1);
@@ -596,7 +612,9 @@ term : term MUL_OP factor {
 	 ;
 
 factor : variable_reference {
-    $$ = $1;
+    if($1){
+        $$ = new_ConstAttr($1->type->kind,NULL,__FALSE);
+    }
 }
 	   | SUB_OP factor {
     if($2){
@@ -651,15 +669,16 @@ array_list : ID dimension {
     //TODO dimension check
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
     if(node){
-        //check Array
         if(node->kind == VAR_t || node->kind == CONST || node->kind == PARAM_t){
             if(node->type->isArray){
-                $$ = new_ConstAttr(node->type->kind,NULL,__FALSE);
+                $$ = node;
             }else{
                 Not_array_reference($1);
+                $$ = NULL;
             }
         }else{
             Func_reference($1);
+            $$ = NULL;
         }
     }else{
         Undef_reference($1);

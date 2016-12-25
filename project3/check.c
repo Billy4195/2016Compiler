@@ -74,6 +74,10 @@ void Not_array_reference(char *name){
     print_error("The symbol ",name," is not array type");
 }
 
+void Const_assign(char *name){
+    print_error("The assign of a const \"",strdup(name),"\" is not allowed");
+}
+
 struct symEntry *find_ID_Decl(struct symTable *table,char *name){
     int cur=table->filled-1;
     for(;cur >= 0;cur--){
@@ -173,4 +177,10 @@ struct ConstAttr *check_arithmetic_operand(struct ConstAttr *operand1,char *oper
         }
     }
     return NULL;
+}
+
+void check_const_assign(struct symEntry *node){
+    if(node && node->kind == CONST_t){
+        Const_assign(node->name);
+    }
 }
