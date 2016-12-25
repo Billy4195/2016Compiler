@@ -39,6 +39,7 @@ struct symTable *symbolTable;
 %type <param_list> parameter_list
 %type <const_list> const_list
 %type <strval> relation_operator
+%type <intval> dimension
 
 %token	<strval> ID
 %token	<intval> INT_CONST
@@ -666,12 +667,16 @@ logical_expression_list : logical_expression_list COMMA logical_expression
 						;
 
 array_list : ID dimension {
-    //TODO dimension check
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
     if(node){
         if(node->kind == VAR_t || node->kind == CONST || node->kind == PARAM_t){
             if(node->type->isArray){
-                $$ = node;
+                if($2 != node->type->dim->filled){
+                    Array_over_subscripted($1);
+                    $$ = NULL;
+                }else{
+                    $$ = node;
+                }
             }else{
                 Not_array_reference($1);
                 $$ = NULL;
@@ -687,8 +692,20 @@ array_list : ID dimension {
 }
 		   ;
 
-dimension : dimension ML_BRACE logical_expression MR_BRACE		   
-		  | ML_BRACE logical_expression MR_BRACE
+dimension : dimension ML_BRACE logical_expression MR_BRACE {
+    if($3){
+        $$ = $1 + 1;
+    }else{
+        $$ = $1;
+    }
+}
+		  | ML_BRACE logical_expression MR_BRACE {
+    if($2){
+        $$ = 1;
+    }else{
+        $$ = 0;
+    }
+}
 		  ;
 
 

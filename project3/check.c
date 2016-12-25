@@ -78,6 +78,10 @@ void Const_assign(char *name){
     print_error("The assign of a const \"",strdup(name),"\" is not allowed");
 }
 
+void Array_over_subscripted(char *name){
+    print_error("The dimesion to subscript array ",name," is unmatch to its declaration");
+}
+
 struct symEntry *find_ID_Decl(struct symTable *table,char *name){
     int cur=table->filled-1;
     for(;cur >= 0;cur--){
