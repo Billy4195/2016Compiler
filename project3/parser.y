@@ -4,7 +4,6 @@
 #include "DataType.h"
 #include "symbolTable.h"
 #include "check.h"
-//TODO variable unique in "scope"
 
 extern int linenum;
 extern FILE	*yyin;
@@ -155,7 +154,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     struct Param *it = $4->head;
     for(;it != NULL; it = it->next){
         node = find_ID_Decl(symbolTable,it->name);
-        if(node){
+        if(node && node->level == level+1){
             Name_reuse(it->name);
         }else{
             new_node = createParam_node(it, level+1);
@@ -193,7 +192,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN {
     struct Param *it = $4->head;
     for(;it != NULL; it = it->next){
         node = find_ID_Decl(symbolTable,it->name);
-        if(node){
+        if(node && node->level == level +1){
             Name_reuse(it->name);
         }else{
             new_node = createParam_node(it, level+1);
@@ -268,7 +267,7 @@ var_decl : scalar_type identifier_list SEMICOLON {
     struct symEntry *node;
     for(;it != NULL ;it = tmp){
         node = find_ID_Decl(symbolTable,it->name);
-        if(node){
+        if(node && node->level == level){
             Name_reuse(it->name);
         }else{
             new_node = createVar_node($1, it, level);
@@ -324,7 +323,7 @@ const_decl : CONST scalar_type const_list SEMICOLON {
     struct symEntry *node;
     for(;it != NULL ;it = tmp){
         node = find_ID_Decl(symbolTable,it->name);
-        if(node){
+        if(node && node->level == level){
             Name_reuse(it->name);
         }else{
             new_node = createConst_node($2, it, level);
@@ -605,10 +604,6 @@ factor : variable_reference {
 	   | L_PAREN logical_expression R_PAREN {
     $$ = $2;
 }
-	   | SUB_OP L_PAREN logical_expression R_PAREN {
-    $3->minus ^= __TRUE; //xor 1 (true -> false and false -> true)
-    $$ = $3;
-}
 	   | ID L_PAREN logical_expression_list R_PAREN {
     struct symEntry *node = find_ID_Decl(symbolTable,$1);
     if(node){
@@ -642,36 +637,6 @@ factor : variable_reference {
 	   | literal_const {
     //TODO check type
     $$ = new_ConstAttr($1->kind,NULL,$1->minus);
-}
-	   | SUB_OP ID L_PAREN logical_expression R_PAREN {
-    struct symEntry *node = find_ID_Decl(symbolTable,$2);
-    if(node){
-        if(node->kind != FUNC_t){
-            Not_func_invoke($2);
-            $$ = NULL;
-        }else{
-            //TODO check actual param
-            $$ = new_ConstAttr(node->type->kind,NULL,__TRUE);
-        }
-    }else{
-        Func_invoke_not_decl_or_def($2);
-        $$ = NULL;
-    }
-}
-	   | SUB_OP ID L_PAREN R_PAREN {
-    struct symEntry *node = find_ID_Decl(symbolTable,$2);
-    if(node){
-        if(node->kind != FUNC_t){
-            Not_func_invoke($2);
-            $$ = NULL;
-        }else{
-            //TODO check actual param
-            $$ = new_ConstAttr(node->type->kind,NULL,__TRUE);
-        }
-    }else{
-        Func_invoke_not_decl_or_def($2);
-        $$ = NULL;
-    }
 }
 	   ;
 
