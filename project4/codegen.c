@@ -31,6 +31,10 @@ void add_method(const char *id,struct param_sem *params,struct PType *retType){
     fprintf(ofp,".limit locals 100\n");
 }
 
+void add_global_var(const char *id,struct PType *type){
+    fprintf(ofp,".field public static %s %s\n",id,trans_type(type));
+}
+
 char *trans_type(struct PType *type){
     switch(type->type){
     case VOID_t:

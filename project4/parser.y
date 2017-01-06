@@ -303,6 +303,9 @@ var_decl : scalar_type identifier_list SEMICOLON
 					else {
 						if( verifyVarInitValue( $1, ptr, symbolTable, scope ) ==  __TRUE ){	
 							newNode = createVarNode( ptr->para->idlist->value, scope, ptr->para->pType );
+              if(scope == 0){
+                  add_global_var(ptr->para->idlist->value,ptr->para->pType);
+              }
 							insertTab( symbolTable, newNode );											
 						}
 					}
