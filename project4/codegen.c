@@ -10,6 +10,11 @@ void add_main(){
     fprintf(ofp,".method public static main([Ljava/lang/String;)V\n");
     fprintf(ofp,".limit stack 100\n");
     fprintf(ofp,".limit locals 100\n");
+    fprintf(ofp,"   new java/util/Scanner\n");
+    fprintf(ofp,"   dup\n");
+    fprintf(ofp,"   getstatic java/lang/System/in Ljava/io/InputStream;\n");
+    fprintf(ofp,"   invokespecial java/util/Scanner/<init>(Ljava/io/InputStream;)V\n");
+    fprintf(ofp,"   putstatic test/_sc Ljava/util/Scanner;\n");
 }
 
 void add_method(const char *id,struct param_sem *params,struct PType *retType){
