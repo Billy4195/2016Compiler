@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "header.h"
 #include "symtab.h"
 
@@ -11,6 +12,7 @@ extern struct PType *funcReturn;
 extern char fileName[256];
 
 extern __BOOLEAN semError; 
+FILE *ofp;
 
 int  main( int argc, char **argv )
 {
@@ -25,6 +27,10 @@ int  main( int argc, char **argv )
 				fprintf( stderr, "Open file error\n" );
 				exit(-1);
 		}
+    char *outfile_name = (char*)malloc(sizeof(char)*(strlen(argv[1])+5));
+    strcpy(outfile_name,argv[1]);
+    strcat(outfile_name,".out");
+    ofp = fopen(outfile_name, "w");
 		yyin = fp;
 	}
 	else

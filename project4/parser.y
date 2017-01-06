@@ -6,12 +6,14 @@
 #include "header.h"
 #include "symtab.h"
 #include "semcheck.h"
+#include "codegen.h"
 
 extern int linenum;
 extern FILE	*yyin;
 extern char	*yytext;
 extern char buf[256];
 extern int Opt_Symbol;		/* declared in lex.l */
+extern FILE *ofp;
 
 int scope = 0;
 char fileName[256];
@@ -20,7 +22,6 @@ __BOOLEAN paramError;
 struct PType *funcReturn;
 __BOOLEAN semError = __FALSE;
 int inloop = 0;
-
 %}
 
 %union {
@@ -59,8 +60,14 @@ int inloop = 0;
 %start program
 %%
 
-program :		decl_list 
-			    funct_def
+program : 
+{
+    fprintf(ofp,".class public test\n"); 
+    fprintf(ofp,".super java/lang/Object\n\n"); 
+    fprintf(ofp,".field public static _sc Ljava/util/Scanner;\n");
+}
+        decl_list 
+			  funct_def
 				decl_and_def_list 
 				{
 					if(Opt_Symbol == 1)
@@ -90,13 +97,18 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 				node = findFuncDeclaration( symbolTable, $2 );
 				
 				if( node != 0 ){
-					verifyFuncDeclaration( symbolTable, 0, $1, node );
+				  if(verifyFuncDeclaration( symbolTable, 0, $1, node )){
+            add_method($2,NULL,$1);
+          }
 				}
 				else{
 					insertFuncIntoSymTable( symbolTable, $2, 0, $1, scope, __TRUE );
+          add_method($2,NULL,$1);
 				}
 			}
-			compound_statement { funcReturn = 0; }	
+			compound_statement { funcReturn = 0; 
+        fprintf(ofp,".end method");
+      }	
 		  | scalar_type ID L_PAREN parameter_list R_PAREN  
 			{				
 				funcReturn = $1;
@@ -114,15 +126,19 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 					if( node != 0 ){
 						if(verifyFuncDeclaration( symbolTable, $4, $1, node ) == __TRUE){	
 							insertParamIntoSymTable( symbolTable, $4, scope+1 );
+              add_method($2,$4,$1);
 						}				
 					}
 					else{
 						insertParamIntoSymTable( symbolTable, $4, scope+1 );				
 						insertFuncIntoSymTable( symbolTable, $2, $4, $1, scope, __TRUE );
+            add_method($2,$4,$1);
 					}
 				}
 			} 	
-			compound_statement { funcReturn = 0; }
+			compound_statement { funcReturn = 0; 
+        fprintf(ofp,".end method");
+      }
 		  | VOID ID L_PAREN R_PAREN 
 			{
 				funcReturn = createPType(VOID_t); 
@@ -130,13 +146,21 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 				node = findFuncDeclaration( symbolTable, $2 );
 
 				if( node != 0 ){
-					verifyFuncDeclaration( symbolTable, 0, createPType( VOID_t ), node );					
+					verifyFuncDeclaration( symbolTable, 0, createPType( VOID_t ), node );
+          struct PType *tmp_type = createPType(VOID_t);
+          add_method($2,NULL,tmp_type);
+          free(tmp_type);
 				}
 				else{
 					insertFuncIntoSymTable( symbolTable, $2, 0, createPType( VOID_t ), scope, __TRUE );	
+          struct PType *tmp_type = createPType(VOID_t);
+          add_method($2,NULL,tmp_type);
+          free(tmp_type);
 				}
 			}
-			compound_statement { funcReturn = 0; }	
+			compound_statement { funcReturn = 0; 
+        fprintf(ofp,".end method");
+      }	
 		  | VOID ID L_PAREN parameter_list R_PAREN
 			{									
 				funcReturn = createPType(VOID_t);
@@ -154,15 +178,23 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 					if( node != 0 ){
 						if(verifyFuncDeclaration( symbolTable, $4, createPType( VOID_t ), node ) == __TRUE){	
 							insertParamIntoSymTable( symbolTable, $4, scope+1 );				
+              struct PType *tmp_type = createPType(VOID_t);
+              add_method($2,$4,tmp_type);
+              free(tmp_type);
 						}
 					}
 					else{
 						insertParamIntoSymTable( symbolTable, $4, scope+1 );				
 						insertFuncIntoSymTable( symbolTable, $2, $4, createPType( VOID_t ), scope, __TRUE );
+            struct PType *tmp_type = createPType(VOID_t);
+            add_method($2,$4,tmp_type);
+            free(tmp_type);
 					}
 				}
 			} 
-			compound_statement { funcReturn = 0; }		  
+			compound_statement { funcReturn = 0; 
+        fprintf(ofp,".end method");
+      } 
 		  ;
 
 funct_decl : scalar_type ID L_PAREN R_PAREN SEMICOLON
