@@ -6,6 +6,12 @@
 
 extern FILE *ofp;
 
+void add_main(){
+    fprintf(ofp,".method public static main([Ljava/lang/String;)V\n");
+    fprintf(ofp,".limit stack 100\n");
+    fprintf(ofp,".limit locals 100\n");
+}
+
 void add_method(const char *id,struct param_sem *params,struct PType *retType){
     struct param_sem *cur = params;
     fprintf(ofp,".method public static %s(",id); 
