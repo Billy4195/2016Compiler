@@ -18,6 +18,12 @@ void add_main(){
     fprintf(ofp,"   putstatic %s/_sc Ljava/util/Scanner;\n",class_name);
 }
 
+void insert_main_param(struct SymTable *table,int scope){
+    struct SymNode *newNode;
+    newNode = createParamNode(" ",scope,createPType(STRING_t));
+    insertTab( table, newNode );
+}
+
 void add_method(const char *id,struct param_sem *params,struct PType *retType){
     struct param_sem *cur = params;
     fprintf(ofp,".method public static %s(",id); 

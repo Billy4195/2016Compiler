@@ -99,18 +99,22 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 				
 				if( node != 0 ){
 				  if(verifyFuncDeclaration( symbolTable, 0, $1, node )){
-            if(!strcmp($2,"main"))
+            if(!strcmp($2,"main")){
               add_main();
-            else
+              insert_main_param(symbolTable, scope+1);
+            }else{
               add_method($2,NULL,$1);
+            }
           }
 				}
 				else{
 					insertFuncIntoSymTable( symbolTable, $2, 0, $1, scope, __TRUE );
-          if(!strcmp($2,"main"))
+          if(!strcmp($2,"main")){
             add_main();
-          else
+            insert_main_param(symbolTable, scope+1);
+          }else{
             add_method($2,NULL,$1);
+          }
 				}
 			}
 			compound_statement { 
@@ -136,20 +140,24 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 
 					if( node != 0 ){
 						if(verifyFuncDeclaration( symbolTable, $4, $1, node ) == __TRUE){	
-							insertParamIntoSymTable( symbolTable, $4, scope+1 );
-              if(!strcmp($2,"main"))
+              if(!strcmp($2,"main")){
                 add_main();
-              else
+                insert_main_param(symbolTable, scope+1);
+              }else{
+							  insertParamIntoSymTable( symbolTable, $4, scope+1 );
                 add_method($2,$4,$1);
+              }
 						}				
 					}
 					else{
-						insertParamIntoSymTable( symbolTable, $4, scope+1 );				
 						insertFuncIntoSymTable( symbolTable, $2, $4, $1, scope, __TRUE );
-            if(!strcmp($2,"main"))
+            if(!strcmp($2,"main")){
               add_main();
-            else
+              insert_main_param(symbolTable, scope+1);
+            }else{
+						  insertParamIntoSymTable( symbolTable, $4, scope+1 );				
               add_method($2,$4,$1);
+            }
 					}
 				}
 			} 	
@@ -168,9 +176,10 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 
 				if( node != 0 ){
 					verifyFuncDeclaration( symbolTable, 0, createPType( VOID_t ), node );
-          if(!strcmp($2,"main"))
+          if(!strcmp($2,"main")){
             add_main();
-          else{
+            insert_main_param(symbolTable, scope+1);
+          }else{
             struct PType *tmp_type = createPType(VOID_t);
             add_method($2,NULL,tmp_type);
             free(tmp_type);
@@ -178,9 +187,10 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 				}
 				else{
 					insertFuncIntoSymTable( symbolTable, $2, 0, createPType( VOID_t ), scope, __TRUE );	
-          if(!strcmp($2,"main"))
+          if(!strcmp($2,"main")){
             add_main();
-          else{
+            insert_main_param(symbolTable, scope+1);
+          }else{
             struct PType *tmp_type = createPType(VOID_t);
             add_method($2,NULL,tmp_type);
             free(tmp_type);
@@ -210,10 +220,11 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 
 					if( node != 0 ){
 						if(verifyFuncDeclaration( symbolTable, $4, createPType( VOID_t ), node ) == __TRUE){	
-							insertParamIntoSymTable( symbolTable, $4, scope+1 );				
-              if(!strcmp($2,"main"))
+              if(!strcmp($2,"main")){
                 add_main();
-              else{
+                insert_main_param(symbolTable, scope+1);
+              }else{
+							  insertParamIntoSymTable( symbolTable, $4, scope+1 );				
                 struct PType *tmp_type = createPType(VOID_t);
                 add_method($2,$4,tmp_type);
                 free(tmp_type);
@@ -221,11 +232,12 @@ funct_def : scalar_type ID L_PAREN R_PAREN
 						}
 					}
 					else{
-						insertParamIntoSymTable( symbolTable, $4, scope+1 );				
 						insertFuncIntoSymTable( symbolTable, $2, $4, createPType( VOID_t ), scope, __TRUE );
-            if(!strcmp($2,"main"))
+            if(!strcmp($2,"main")){
               add_main();
-            else{
+              insert_main_param(symbolTable, scope+1);
+            }else{
+						  insertParamIntoSymTable( symbolTable, $4, scope+1 );				
               struct PType *tmp_type = createPType(VOID_t);
               add_method($2,$4,tmp_type);
               free(tmp_type);
