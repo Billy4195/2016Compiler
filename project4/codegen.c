@@ -43,17 +43,8 @@ void add_global_var(const char *id,struct PType *type){
 }
 
 void load_var(struct SymTable *table,struct expr_sem *var){
-    int count=0,targe_index;
-    struct SymNode *nodePtr,*target;
-    for( nodePtr = table->entry[0] ; nodePtr != 0;nodePtr= nodePtr->next){
-        if(!strcmp(nodePtr->name,var->varRef->id)){
-            target = nodePtr;
-            targe_index = count;
-        }
-        if(nodePtr->scope != 0){
-            count++;
-        }
-    }
+    int target_index;
+    struct SymNode *target=find_symbol(table,var,&target_index);
     if(target && target->scope == 0){
         fprintf(ofp,"   getstatic %s/%s %s\n",class_name,target->name,trans_type(target->type));
     }else if(target){
@@ -71,7 +62,7 @@ void load_var(struct SymTable *table,struct expr_sem *var){
             fprintf(ofp,"   dload ");
             break;
         }
-        fprintf(ofp,"%d\n",targe_index);
+        fprintf(ofp,"%d\n",target_index);
     }else{
         printf("variable %s not found\n",var->varRef->id);
     }
@@ -173,4 +164,19 @@ char *trans_type(struct PType *type){
     case DOUBLE_t:
         return "D";
     }
+}
+
+struct SymNode *find_symbol(struct SymTable *table,struct expr_sem *var,int *target_index){
+    int count=0;
+    struct SymNode *nodePtr,*target=NULL;
+    for( nodePtr = table->entry[0] ; nodePtr != 0;nodePtr= nodePtr->next){
+        if(!strcmp(nodePtr->name,var->varRef->id)){
+            target = nodePtr;
+            *target_index = count;
+        }
+        if(nodePtr->scope != 0){
+            count++;
+        }
+    }
+    return target;
 }

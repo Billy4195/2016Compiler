@@ -15,3 +15,4 @@ void or_op();
 void and_op();
 void not_op();
 char *trans_type(struct PType *type);
+struct SymNode *find_symbol(struct SymTable *table,struct expr_sem *var,int *target_index);
