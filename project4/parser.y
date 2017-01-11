@@ -62,7 +62,7 @@ int inloop = 0;
 
 program : 
 {
-    fprintf(ofp,".class public test\n"); 
+    fprintf(ofp,".class public output\n"); 
     fprintf(ofp,".super java/lang/Object\n\n"); 
     fprintf(ofp,".field public static _sc Ljava/util/Scanner;\n");
 }

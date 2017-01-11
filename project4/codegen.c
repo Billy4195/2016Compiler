@@ -14,7 +14,7 @@ void add_main(){
     fprintf(ofp,"   dup\n");
     fprintf(ofp,"   getstatic java/lang/System/in Ljava/io/InputStream;\n");
     fprintf(ofp,"   invokespecial java/util/Scanner/<init>(Ljava/io/InputStream;)V\n");
-    fprintf(ofp,"   putstatic test/_sc Ljava/util/Scanner;\n");
+    fprintf(ofp,"   putstatic output/_sc Ljava/util/Scanner;\n");
 }
 
 void add_method(const char *id,struct param_sem *params,struct PType *retType){
