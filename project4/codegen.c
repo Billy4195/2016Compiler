@@ -5,6 +5,7 @@
 #include "codegen.h"
 
 extern FILE *ofp;
+extern char *class_name;
 
 void add_main(){
     fprintf(ofp,".method public static main([Ljava/lang/String;)V\n");
@@ -14,7 +15,7 @@ void add_main(){
     fprintf(ofp,"   dup\n");
     fprintf(ofp,"   getstatic java/lang/System/in Ljava/io/InputStream;\n");
     fprintf(ofp,"   invokespecial java/util/Scanner/<init>(Ljava/io/InputStream;)V\n");
-    fprintf(ofp,"   putstatic output/_sc Ljava/util/Scanner;\n");
+    fprintf(ofp,"   putstatic %s/_sc Ljava/util/Scanner;\n",class_name);
 }
 
 void add_method(const char *id,struct param_sem *params,struct PType *retType){
@@ -33,6 +34,41 @@ void add_method(const char *id,struct param_sem *params,struct PType *retType){
 
 void add_global_var(const char *id,struct PType *type){
     fprintf(ofp,".field public static %s %s\n",id,trans_type(type));
+}
+
+void load_var(struct SymTable *table,struct expr_sem *var){
+    int count=0,targe_index;
+    struct SymNode *nodePtr,*target;
+    for( nodePtr = table->entry[0] ; nodePtr != 0;nodePtr= nodePtr->next){
+        if(!strcmp(nodePtr->name,var->varRef->id)){
+            target = nodePtr;
+            targe_index = count;
+        }
+        if(nodePtr->scope != 0){
+            count++;
+        }
+    }
+    if(target && target->scope == 0){
+        fprintf(ofp,"   getstatic %s/%s %s\n",class_name,target->name,trans_type(target->type));
+    }else if(target){
+        switch(target->type->type){
+        case INTEGER_t:
+            fprintf(ofp,"   iload ");
+            break;
+        case BOOLEAN_t:
+            fprintf(ofp,"   iload ");
+            break;
+        case FLOAT_t:
+            fprintf(ofp,"   fload ");
+            break;
+        case DOUBLE_t:
+            fprintf(ofp,"   dload ");
+            break;
+        }
+        fprintf(ofp,"%d\n",targe_index);
+    }else{
+        printf("variable %s not found\n",var->varRef->id);
+    }
 }
 
 char *trans_type(struct PType *type){

@@ -13,6 +13,7 @@ extern char fileName[256];
 
 extern __BOOLEAN semError; 
 FILE *ofp;
+char *class_name="output";
 
 int  main( int argc, char **argv )
 {
@@ -57,6 +58,7 @@ int  main( int argc, char **argv )
 		fprintf( stdout, "|-------------------------------------------|\n" );
 	}
 
+  fclose(ofp);
 	exit(0);
 }
 

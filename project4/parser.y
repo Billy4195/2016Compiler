@@ -14,6 +14,7 @@ extern char	*yytext;
 extern char buf[256];
 extern int Opt_Symbol;		/* declared in lex.l */
 extern FILE *ofp;
+extern char *class_name;
 
 int scope = 0;
 char fileName[256];
@@ -62,7 +63,7 @@ int inloop = 0;
 
 program : 
 {
-    fprintf(ofp,".class public output\n"); 
+    fprintf(ofp,".class public %s\n",class_name); 
     fprintf(ofp,".super java/lang/Object\n\n"); 
     fprintf(ofp,".field public static _sc Ljava/util/Scanner;\n");
 }
@@ -711,6 +712,9 @@ factor : variable_reference
 		{
 			verifyExistence( symbolTable, $1, scope, __FALSE );
 			$$ = $1;
+      if($$->pType->type != ERROR_t){
+        load_var(symbolTable, $$);
+      }
 			$$->beginningOp = NONE_t;
 		}
 	   | SUB_OP variable_reference
@@ -718,6 +722,9 @@ factor : variable_reference
 			if( verifyExistence( symbolTable, $2, scope, __FALSE ) == __TRUE )
 			verifyUnaryMinus( $2 );
 			$$ = $2;
+      if($$->pType->type != ERROR_t){
+        load_var(symbolTable, $$);
+      }
 			$$->beginningOp = SUB_t;
 		}		
 	   | L_PAREN logical_expression R_PAREN
