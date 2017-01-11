@@ -77,6 +77,20 @@ void load_var(struct SymTable *table,struct expr_sem *var){
     }
 }
 
+void neg_op(struct expr_sem *var){
+    switch(var->pType->type){
+    case INTEGER_t:
+        fprintf(ofp,"   ineg\n");
+        break;
+    case FLOAT_t:
+        fprintf(ofp,"   fneg\n");
+        break;
+    case DOUBLE_t:
+        fprintf(ofp,"   dneg\n");
+        break;
+    }
+}
+
 char *trans_type(struct PType *type){
     switch(type->type){
     case VOID_t:

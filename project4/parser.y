@@ -736,6 +736,7 @@ factor : variable_reference
 			$$ = $2;
       if($$->pType->type != ERROR_t){
         load_var(symbolTable, $$);
+        neg_op($$);
       }
 			$$->beginningOp = SUB_t;
 		}		
