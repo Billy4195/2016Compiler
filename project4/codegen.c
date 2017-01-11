@@ -77,8 +77,8 @@ void load_var(struct SymTable *table,struct expr_sem *var){
     }
 }
 
-void neg_op(struct expr_sem *var){
-    switch(var->pType->type){
+void neg_op(struct expr_sem *expr){
+    switch(expr->pType->type){
     case INTEGER_t:
         fprintf(ofp,"   ineg\n");
         break;
@@ -89,6 +89,75 @@ void neg_op(struct expr_sem *var){
         fprintf(ofp,"   dneg\n");
         break;
     }
+}
+
+void mod_op(){
+    fprintf(ofp,"   irem\n");
+}
+
+void mul_op(struct expr_sem *expr,int op){
+    switch(expr->pType->type){
+    case INTEGER_t:
+        if(op == DIV_t){
+            fprintf(ofp,"   idiv\n");
+        }else{
+            fprintf(ofp,"   imul\n");
+        }
+        break;
+    case FLOAT_t:
+        if(op == DIV_t){
+            fprintf(ofp,"   fdiv\n");
+        }else{
+            fprintf(ofp,"   fmul\n");
+        }
+        break;
+    case DOUBLE_t:
+        if(op == DIV_t){
+            fprintf(ofp,"   ddiv\n");
+        }else{
+            fprintf(ofp,"   dmul\n");
+        }
+        break;
+    }
+}
+
+void add_op(struct expr_sem *expr,int op){
+    switch(expr->pType->type){
+    case INTEGER_t:
+        if(op == ADD_t){
+            fprintf(ofp,"   iadd\n");
+        }else{
+            fprintf(ofp,"   isub\n");
+        }
+        break;
+    case FLOAT_t:
+        if(op == ADD_t){
+            fprintf(ofp,"   fadd\n");
+        }else{
+            fprintf(ofp,"   fsub\n");
+        }
+        break;
+    case DOUBLE_t:
+        if(op == ADD_t){
+            fprintf(ofp,"   dadd\n");
+        }else{
+            fprintf(ofp,"   dsub\n");
+        }
+        break;
+    }
+}
+
+void or_op(){
+    fprintf(ofp,"   ior\n");
+}
+
+void and_op(){
+    fprintf(ofp,"   iand\n");
+}
+
+void not_op(){
+    fprintf(ofp,"   ldc 1\n");
+    fprintf(ofp,"   ixor\n");
 }
 
 char *trans_type(struct PType *type){

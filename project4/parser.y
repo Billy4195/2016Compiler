@@ -653,6 +653,9 @@ logical_expression : logical_expression OR_OP logical_term
 					{
 						verifyAndOrOp( $1, OR_t, $3 );
 						$$ = $1;
+            if($1->pType->type != ERROR_t){
+              or_op();
+            }
 					}
 				   | logical_term { $$ = $1; }
 				   ;
@@ -661,6 +664,9 @@ logical_term : logical_term AND_OP logical_factor
 				{
 					verifyAndOrOp( $1, AND_t, $3 );
 					$$ = $1;
+          if($1->pType->type != ERROR_t){
+            and_op();
+          }
 				}
 			 | logical_factor { $$ = $1; }
 			 ;
@@ -669,6 +675,9 @@ logical_factor : NOT_OP logical_factor
 				{
 					verifyUnaryNOT( $2 );
 					$$ = $2;
+          if($$->pType->type != ERROR_t){
+            not_op();
+          }
 				}
 			   | relation_expression { $$ = $1; }
 			   ;
@@ -693,6 +702,9 @@ arithmetic_expression : arithmetic_expression add_op term
 			{
 				verifyArithmeticOp( $1, $2, $3 );
 				$$ = $1;
+        if($1->pType->type != ERROR_t){
+          add_op($$,$2);
+        }
 			}
                    | relation_expression { $$ = $1; }
 		   | term { $$ = $1; }
@@ -706,9 +718,15 @@ term : term mul_op factor
 		{
 			if( $2 == MOD_t ) {
 				verifyModOp( $1, $3 );
+        if($1->pType->type != ERROR_t){
+          mod_op();
+        }
 			}
 			else {
 				verifyArithmeticOp( $1, $2, $3 );
+        if($1->pType->type != ERROR_t){
+          mul_op($1,$2);          
+        }
 			}
 			$$ = $1;
 		}
@@ -749,6 +767,9 @@ factor : variable_reference
 		{
 			verifyUnaryMinus( $3 );
 			$$ = $3;
+      if($$->pType->type != ERROR_t){
+        neg_op($$);
+      }
 			$$->beginningOp = SUB_t;
 		}
 	   | ID L_PAREN logical_expression_list R_PAREN
