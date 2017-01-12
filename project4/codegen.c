@@ -107,7 +107,11 @@ void load_double(double d){
 }
 
 void load_str(char *str){
-    fprintf(ofp,"   ldc \"%s\"\n",str);
+    if(strcmp(str,"\n")){
+        fprintf(ofp,"   ldc \"%s\"\n",str);
+    }else{
+        fprintf(ofp,"   ldc \"\\n\"\n");
+    }
 }
 
 void neg_op(struct expr_sem *expr){
@@ -193,6 +197,10 @@ void not_op(){
     fprintf(ofp,"   ixor\n");
 }
 
+void invoke_print(struct expr_sem *expr){
+    fprintf(ofp,"   invokevirtual java/io/PrintStream/print(%s)V\n",trans_type(expr->pType));
+}
+
 char *trans_type(struct PType *type){
     switch(type->type){
     case VOID_t:
@@ -205,6 +213,8 @@ char *trans_type(struct PType *type){
         return "F";
     case DOUBLE_t:
         return "D";
+    case STRING_t:
+        return "Ljava/lang/String;";
     }
 }
 

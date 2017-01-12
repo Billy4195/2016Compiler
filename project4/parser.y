@@ -521,7 +521,15 @@ simple_statement : variable_reference ASSIGN_OP logical_expression SEMICOLON
               store_var(symbolTable,$1->varRef->id,$1->pType);
             }
 					}
-				 | PRINT logical_expression SEMICOLON { verifyScalarExpr( $2, "print" ); }
+				 | PRINT
+          {
+            fprintf(ofp,"   getstatic java/lang/System/out Ljava/io/PrintStream;\n");
+          }
+         logical_expression SEMICOLON
+          {
+            verifyScalarExpr( $3, "print" );
+            invoke_print($3);
+          }
 				 | READ variable_reference SEMICOLON 
 					{ 
 						if( verifyExistence( symbolTable, $2, scope, __TRUE ) == __TRUE )						
