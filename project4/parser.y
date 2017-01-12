@@ -516,8 +516,10 @@ simple_statement : variable_reference ASSIGN_OP logical_expression SEMICOLON
 							flagRHS = verifyExistence( symbolTable, $3, scope, __FALSE );
 						}
 						// if both LHS and RHS are exists, verify their type
-						if( flagLHS==__TRUE && flagRHS==__TRUE )
+						if( flagLHS==__TRUE && flagRHS==__TRUE ){
 							verifyAssignmentTypeMatch( $1, $3 );
+              store_var(symbolTable,$1->varRef->id,$1->pType);
+            }
 					}
 				 | PRINT logical_expression SEMICOLON { verifyScalarExpr( $2, "print" ); }
 				 | READ variable_reference SEMICOLON 
@@ -601,8 +603,10 @@ statement_for 	: variable_reference ASSIGN_OP logical_expression
 							flagRHS = verifyExistence( symbolTable, $3, scope, __FALSE );
 						}
 						// if both LHS and RHS are exists, verify their type
-						if( flagLHS==__TRUE && flagRHS==__TRUE )
+						if( flagLHS==__TRUE && flagRHS==__TRUE ){
 							verifyAssignmentTypeMatch( $1, $3 );
+              store_var(symbolTable,$1->varRef->id,$1->pType);
+            }
 					}
 					;
 					 
