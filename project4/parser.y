@@ -319,7 +319,10 @@ var_decl : scalar_type identifier_list SEMICOLON
               if(scope == 0){
                   add_global_var(ptr->para->idlist->value,ptr->para->pType);
               }
-							insertTab( symbolTable, newNode );											
+							insertTab( symbolTable, newNode );	
+              if(ptr->expr){
+                  store_var(symbolTable,ptr->para->idlist->value,ptr->para->pType);
+              }
 						}
 					}
 				}
