@@ -839,45 +839,54 @@ literal_const : INT_CONST
 				{
 					int tmp = $1;
 					$$ = createConstAttr( INTEGER_t, &tmp );
+          load_int(tmp);
 				}
 			  | SUB_OP INT_CONST
 				{
 					int tmp = -$2;
 					$$ = createConstAttr( INTEGER_t, &tmp );
+          load_int(tmp);
 				}
 			  | FLOAT_CONST
 				{
 					float tmp = $1;
 					$$ = createConstAttr( FLOAT_t, &tmp );
+          load_float(tmp);
 				}
 			  | SUB_OP FLOAT_CONST
 			    {
 					float tmp = -$2;
 					$$ = createConstAttr( FLOAT_t, &tmp );
+          load_float(tmp);
 				}
 			  | SCIENTIFIC
 				{
 					double tmp = $1;
 					$$ = createConstAttr( DOUBLE_t, &tmp );
+          load_double(tmp);
 				}
 			  | SUB_OP SCIENTIFIC
 				{
 					double tmp = -$2;
 					$$ = createConstAttr( DOUBLE_t, &tmp );
+          load_double(tmp);
 				}
 			  | STR_CONST
 				{
 					$$ = createConstAttr( STRING_t, $1 );
+          load_str($1);
 				}
 			  | TRUE
 				{
 					SEMTYPE tmp = __TRUE;
 					$$ = createConstAttr( BOOLEAN_t, &tmp );
+          load_int(1);
 				}
 			  | FALSE
 				{
 					SEMTYPE tmp = __FALSE;
 					$$ = createConstAttr( BOOLEAN_t, &tmp );
+          load_int(0);
 				}
 			  ;
 %%

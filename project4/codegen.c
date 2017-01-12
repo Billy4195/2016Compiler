@@ -94,6 +94,22 @@ void store_var(struct SymTable *table,char *id,struct PType *type){
     }
 }
 
+void load_int(int i){
+    fprintf(ofp,"   ldc %d\n",i);
+}
+
+void load_float(float f){
+    fprintf(ofp,"   ldc %f\n",f);
+}
+
+void load_double(double d){
+    fprintf(ofp,"   ldc %lf\n",d);
+}
+
+void load_str(char *str){
+    fprintf(ofp,"   ldc \"%s\"\n",str);
+}
+
 void neg_op(struct expr_sem *expr){
     switch(expr->pType->type){
     case INTEGER_t:
