@@ -309,7 +309,8 @@ parameter_list : parameter_list COMMA scalar_type ID
 
 var_decl : scalar_type identifier_list SEMICOLON
 			{
-				struct varDeclParam *ptr;
+				struct varDeclParam *ptr,*stack[50];
+        int top=-1;
 				struct SymNode *newNode;
 				for( ptr=$2 ; ptr!=0 ; ptr=(ptr->next) ) {						
 					if( verifyRedeclaration( symbolTable, ptr->para->idlist->value, scope ) == __FALSE ) { }
@@ -321,11 +322,15 @@ var_decl : scalar_type identifier_list SEMICOLON
               }
 							insertTab( symbolTable, newNode );	
               if(ptr->expr){
-                  store_var(symbolTable,ptr->para->idlist->value,ptr->para->pType);
+                  stack[++top] = ptr;
               }
 						}
 					}
 				}
+        while(top >= 0){
+            store_var(symbolTable,stack[top]->para->idlist->value,stack[top]->para->pType);
+            top--;
+        }
 			}
 			;
 
