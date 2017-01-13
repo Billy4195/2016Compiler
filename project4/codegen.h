@@ -20,5 +20,6 @@ void or_op();
 void and_op();
 void not_op();
 void invoke_print(struct expr_sem *expr);
+void func_invoke(struct SymTable *table,char *name,int needpop);
 char *trans_type(struct PType *type);
 struct SymNode *find_symbol(struct SymTable *table,char *name,int *target_index);

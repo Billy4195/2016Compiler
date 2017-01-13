@@ -122,7 +122,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
             fprintf(ofp,"return\n");
         }
         funcReturn = 0; 
-        fprintf(ofp,".end method");
+        fprintf(ofp,".end method\n");
       }	
 		  | scalar_type ID L_PAREN parameter_list R_PAREN  
 			{				
@@ -166,7 +166,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
             fprintf(ofp,"return\n");
         }
         funcReturn = 0; 
-        fprintf(ofp,".end method");
+        fprintf(ofp,".end method\n");
       }
 		  | VOID ID L_PAREN R_PAREN 
 			{
@@ -202,7 +202,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
             fprintf(ofp,"return\n");
         }
         funcReturn = 0; 
-        fprintf(ofp,".end method");
+        fprintf(ofp,".end method\n");
       }	
 		  | VOID ID L_PAREN parameter_list R_PAREN
 			{									
@@ -250,7 +250,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
             fprintf(ofp,"return\n");
         }
         funcReturn = 0; 
-        fprintf(ofp,".end method");
+        fprintf(ofp,".end method\n");
       } 
 		  ;
 
@@ -627,10 +627,12 @@ statement_for 	: variable_reference ASSIGN_OP logical_expression
 function_invoke_statement : ID L_PAREN logical_expression_list R_PAREN SEMICOLON
 							{
 								verifyFuncInvoke( $1, $3, symbolTable, scope );
+                func_invoke(symbolTable,$1,1);
 							}
 						  | ID L_PAREN R_PAREN SEMICOLON
 							{
 								verifyFuncInvoke( $1, 0, symbolTable, scope );
+                func_invoke(symbolTable,$1,1);
 							}
 						  ;
 
@@ -796,21 +798,27 @@ factor : variable_reference
 		{
 			$$ = verifyFuncInvoke( $1, $3, symbolTable, scope );
 			$$->beginningOp = NONE_t;
+      func_invoke(symbolTable,$1,0);
 		}
 	   | SUB_OP ID L_PAREN logical_expression_list R_PAREN
 	    {
 			$$ = verifyFuncInvoke( $2, $4, symbolTable, scope );
 			$$->beginningOp = SUB_t;
+      func_invoke(symbolTable,$2,0);
+      neg_op($$);
 		}
 	   | ID L_PAREN R_PAREN
 		{
 			$$ = verifyFuncInvoke( $1, 0, symbolTable, scope );
 			$$->beginningOp = NONE_t;
+      func_invoke(symbolTable,$1,0);
 		}
 	   | SUB_OP ID L_PAREN R_PAREN
 		{
 			$$ = verifyFuncInvoke( $2, 0, symbolTable, scope );
 			$$->beginningOp = SUB_OP;
+      func_invoke(symbolTable,$2,0);
+      neg_op($$);
 		}
 	   | literal_const
 	    {

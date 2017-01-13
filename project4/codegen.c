@@ -30,6 +30,7 @@ void add_method(const char *id,struct param_sem *params,struct PType *retType){
     if(params){
         while(cur != NULL){
             fprintf(ofp,"%s",trans_type(cur->pType));
+            cur = cur->next;
         }
     }
     fprintf(ofp,")");
@@ -199,6 +200,32 @@ void not_op(){
 
 void invoke_print(struct expr_sem *expr){
     fprintf(ofp,"   invokevirtual java/io/PrintStream/print(%s)V\n",trans_type(expr->pType));
+}
+
+void func_invoke(struct SymTable *table,char *name,int needpop){
+    struct SymNode *nodePtr,*target=NULL;
+    for( nodePtr = table->entry[0] ; nodePtr != 0;nodePtr= nodePtr->next){
+        if(!strcmp(nodePtr->name,name)){
+            target = nodePtr;
+            break;
+        }
+        if(nodePtr->scope != 0){
+            return ;
+        }
+    }
+    if(target->category == FUNCTION_t){
+        fprintf(ofp,"   invokestatic %s/%s(",class_name,target->name);
+        int i;
+        struct PTypeList *cur=target->attribute->formalParam->params;
+        for(i=0;i<target->attribute->formalParam->paramNum;i++){
+            fprintf(ofp,"%s",trans_type(cur->value));
+            cur = cur->next;
+        }
+        fprintf(ofp,")%s\n",trans_type(target->type));
+        if(needpop){
+            fprintf(ofp,"   pop\n");
+        }
+    }
 }
 
 char *trans_type(struct PType *type){
