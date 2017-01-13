@@ -651,6 +651,7 @@ jump_statement : CONTINUE SEMICOLON
 			   | RETURN logical_expression SEMICOLON
 				{
 					verifyReturnStatement( $2, funcReturn );
+          return_op($2);
 				}
 			   ;
 

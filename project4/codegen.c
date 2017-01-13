@@ -228,6 +228,23 @@ void func_invoke(struct SymTable *table,char *name,int needpop){
     }
 }
 
+void return_op(struct expr_sem *expr){
+    switch(expr->pType->type){
+    case INTEGER_t:
+        fprintf(ofp,"   ireturn\n");
+        break;
+    case FLOAT_t:
+        fprintf(ofp,"   freturn\n");
+        break;
+    case DOUBLE_t:
+        fprintf(ofp,"   dreturn\n");
+        break;
+    case BOOLEAN_t:
+        fprintf(ofp,"   ireturn\n");
+        break;
+    }
+}
+
 char *trans_type(struct PType *type){
     switch(type->type){
     case VOID_t:
