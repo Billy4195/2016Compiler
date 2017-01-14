@@ -31,6 +31,9 @@ int if_top=-1;
 int for_label_num=0;
 int for_stack[100];
 int for_top=-1;
+int while_label_num=0;
+int while_stack[100];
+int while_top=-1;
 %}
 
 %union {
@@ -579,13 +582,37 @@ if_statement : IF L_PAREN conditional_if  R_PAREN
 conditional_if : logical_expression { verifyBooleanExpr( $1, "if" ); };;					  
 
 				
-while_statement : WHILE L_PAREN logical_expression { verifyBooleanExpr( $3, "while" ); } R_PAREN { inloop++; }
-					compound_statement { inloop--; }
-				| { inloop++; } DO compound_statement WHILE L_PAREN logical_expression R_PAREN SEMICOLON  
+while_statement : WHILE L_PAREN
+          {
+            fprintf(ofp,"WHILEstart_%d:\n",while_label_num);
+            while_stack[++while_top] = while_label_num;
+            while_label_num++;
+          }
+          logical_expression
+          {
+            verifyBooleanExpr( $4, "while" ); 
+            fprintf(ofp,"   ifeq WHILEnext_%d\n",while_stack[while_top]);
+          } 
+          R_PAREN { inloop++; }
+					compound_statement
+          {
+            inloop--;
+            fprintf(ofp,"   goto WHILEstart_%d\n",while_stack[while_top]);
+            fprintf(ofp,"WHILEnext_%d:\n",while_stack[while_top]);
+            while_top--;
+          }
+				| { inloop++; } DO
+          {
+            fprintf(ofp,"WHILEloop_%d:\n",while_label_num);
+            while_stack[++while_top] = while_label_num;
+            while_label_num++;
+          }
+          compound_statement WHILE L_PAREN logical_expression R_PAREN SEMICOLON  
 					{ 
-						 verifyBooleanExpr( $6, "while" );
-						 inloop--; 
-						
+						verifyBooleanExpr( $7, "while" );
+						inloop--; 
+            fprintf(ofp,"   ifne WHILEloop_%d\n",while_stack[while_top]);
+            while_top--;
 					}
 				;
 
