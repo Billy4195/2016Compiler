@@ -19,6 +19,7 @@ void add_op(struct expr_sem *expr,int op);
 void or_op();
 void and_op();
 void not_op();
+void relation_op(struct expr_sem *expr,int rel_op,int *rel_label_num);
 void invoke_print(struct expr_sem *expr);
 void func_invoke(struct SymTable *table,char *name,int needpop);
 void return_op(struct expr_sem *expr);

@@ -228,6 +228,50 @@ void not_op(){
     fprintf(ofp,"   ixor\n");
 }
 
+void relation_op(struct expr_sem *expr,int rel_op,int *rel_label_num){
+    switch(expr->pType->type){
+    case INTEGER_t:
+        fprintf(ofp,"   isub\n");
+        break;
+    case FLOAT_t:
+        fprintf(ofp,"   fsub\n");
+        break;
+    case DOUBLE_t:
+        fprintf(ofp,"   dsub\n");
+        break;
+    case BOOLEAN_t:
+        fprintf(ofp,"   isub\n");
+        break;
+    }
+    switch(rel_op){
+    case LT_t:
+        fprintf(ofp,"   iflt ");
+        break;
+    case LE_t:
+        fprintf(ofp,"   ifle ");
+        break;
+    case GT_t:
+        fprintf(ofp,"   ifgt ");
+        break;
+    case GE_t:
+        fprintf(ofp,"   ifge ");
+        break;
+    case EQ_t:
+        fprintf(ofp,"   ifeq ");
+        break;
+    case NE_t:
+        fprintf(ofp,"   ifne ");
+        break;
+    }
+    fprintf(ofp,"Ltrue_%d\n",*rel_label_num);
+    fprintf(ofp,"   iconst_0\n");
+    fprintf(ofp,"   goto Lfalse_%d\n",*rel_label_num);
+    fprintf(ofp,"Ltrue_%d:\n",*rel_label_num);
+    fprintf(ofp,"   iconst_1\n");
+    fprintf(ofp,"Lfalse_%d:\n",*rel_label_num);
+    *(rel_label_num) = *(rel_label_num) + 1;
+}
+
 void invoke_print(struct expr_sem *expr){
     fprintf(ofp,"   invokevirtual java/io/PrintStream/print(%s)V\n",trans_type(expr->pType));
 }

@@ -24,6 +24,7 @@ struct PType *funcReturn;
 __BOOLEAN semError = __FALSE;
 int inloop = 0;
 int isconst = 0;
+int rel_lable_num=0;
 %}
 
 %union {
@@ -711,6 +712,7 @@ relation_expression : arithmetic_expression relation_operator arithmetic_express
 					{
 						verifyRelOp( $1, $2, $3 );
 						$$ = $1;
+            relation_op($1,$2,&rel_lable_num);
 					}
 					| arithmetic_expression { $$ = $1; }
 					;
@@ -877,7 +879,6 @@ literal_const : INT_CONST
 				{
 					float tmp = $1;
 					$$ = createConstAttr( FLOAT_t, &tmp );
-          printf("%f\n",tmp);
           if(!isconst)
               load_float(tmp);
 				}
