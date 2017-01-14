@@ -295,6 +295,27 @@ void invoke_print(struct expr_sem *expr){
     fprintf(ofp,"   invokevirtual java/io/PrintStream/print(%s)V\n",trans_type(expr->pType));
 }
 
+void invoke_read(struct SymTable *table,struct expr_sem *var){
+    int target_index;
+    struct SymNode *target=find_symbol(table,var->varRef->id,&target_index);
+    fprintf(ofp,"   invokevirtual java/util/Scanner/next");
+    switch(target->type->type){
+    case INTEGER_t:
+        fprintf(ofp,"Int()I\n");
+        break;
+    case FLOAT_t:
+        fprintf(ofp,"Float()F\n");
+        break;
+    case DOUBLE_t:
+        fprintf(ofp,"Double()D\n");
+        break;
+    case BOOLEAN_t:
+        fprintf(ofp,"Boolean()Z\n");
+        break;
+    }
+    store_var(table,target->name,target->type);
+}
+
 void func_invoke(struct SymTable *table,char *name,int needpop){
     struct SymNode *nodePtr,*target=NULL;
     for( nodePtr = table->entry[0] ; nodePtr != 0;nodePtr= nodePtr->next){

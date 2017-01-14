@@ -547,10 +547,15 @@ simple_statement : variable_reference ASSIGN_OP logical_expression SEMICOLON
             verifyScalarExpr( $3, "print" );
             invoke_print($3);
           }
-				 | READ variable_reference SEMICOLON 
+				 | READ
+          {
+            fprintf(ofp,"   getstatic %s/_sc Ljava/util/Scanner;\n",class_name);
+          }
+         variable_reference SEMICOLON 
 					{ 
-						if( verifyExistence( symbolTable, $2, scope, __TRUE ) == __TRUE )						
-							verifyScalarExpr( $2, "read" ); 
+						if( verifyExistence( symbolTable, $3, scope, __TRUE ) == __TRUE )						
+							verifyScalarExpr( $3, "read" ); 
+            invoke_read(symbolTable,$3);
 					}
 				 ;
 
