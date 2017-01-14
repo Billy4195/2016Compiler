@@ -22,6 +22,8 @@ void not_op();
 void relation_op(struct expr_sem *expr,int rel_op,int *rel_label_num);
 void if_start(int if_label_num);
 void if_end(int if_label_num);
+void for_start(int for_label_num);
+void for_end(int for_label_num);
 void invoke_print(struct expr_sem *expr);
 void func_invoke(struct SymTable *table,char *name,int needpop);
 void return_op(struct expr_sem *expr);

@@ -28,6 +28,9 @@ int rel_label_num=0;
 int if_label_num=0;
 int if_stack[100];
 int if_top=-1;
+int for_label_num=0;
+int for_stack[100];
+int for_top=-1;
 %}
 
 %union {
@@ -588,12 +591,36 @@ while_statement : WHILE L_PAREN logical_expression { verifyBooleanExpr( $3, "whi
 
 
 				
-for_statement : FOR L_PAREN initial_expression SEMICOLON control_expression SEMICOLON increment_expression R_PAREN  { inloop++; }
-					compound_statement  { inloop--; }
+for_statement : FOR L_PAREN initial_expression SEMICOLON
+          {
+              fprintf(ofp,"FORstart_%d:\n",for_label_num);
+              for_stack[++for_top] = for_label_num;
+              for_label_num++;
+          }
+          control_expression SEMICOLON
+          {
+              for_start(for_stack[for_top]);
+          }
+          increment_expression R_PAREN
+          {
+              inloop++; 
+              fprintf(ofp,"   goto FORstart_%d\n",for_stack[for_top]);
+              fprintf(ofp,"FORloop_%d:\n",for_stack[for_top]);
+          }
+					compound_statement
+          {
+              inloop--;
+              for_end(for_stack[for_top]);
+              for_top--;
+          }
 			  ;
 
 initial_expression : initial_expression COMMA statement_for		
-				   | initial_expression COMMA logical_expression
+				   | initial_expression COMMA
+            { 
+              fprintf(ofp," pop\n"); 
+            } 
+            logical_expression
 				   | logical_expression	
 				   | statement_for
 				   |
@@ -604,9 +631,13 @@ control_expression : control_expression COMMA statement_for
 						fprintf( stdout, "########## Error at Line#%d: control_expression is not boolean type ##########\n", linenum );
 						semError = __TRUE;	
 				   }
-				   | control_expression COMMA logical_expression
+				   | control_expression COMMA
+            {
+              fprintf(ofp," pop\n");
+            }
+           logical_expression
 				   {
-						if( $3->pType->type != BOOLEAN_t ){
+						if( $4->pType->type != BOOLEAN_t ){
 							fprintf( stdout, "########## Error at Line#%d: control_expression is not boolean type ##########\n", linenum );
 							semError = __TRUE;	
 						}
@@ -627,7 +658,11 @@ control_expression : control_expression COMMA statement_for
 				   ;
 
 increment_expression : increment_expression COMMA statement_for
-					 | increment_expression COMMA logical_expression
+					 | increment_expression COMMA
+            {
+              fprintf(ofp," pop\n"); 
+            }
+           logical_expression
 					 | logical_expression
 					 | statement_for
 					 |

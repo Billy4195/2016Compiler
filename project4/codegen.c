@@ -280,6 +280,17 @@ void if_end(int if_label_num){
     fprintf(ofp,"IFfalse_%d:\n",if_label_num);
 }
 
+void for_start(int for_label_num){
+    fprintf(ofp,"   ifeq FORnext_%d\n",for_label_num);
+    fprintf(ofp,"   goto FORloop_%d\n",for_label_num);
+    fprintf(ofp,"FORend_%d:\n",for_label_num);
+}
+
+void for_end(int for_label_num){
+    fprintf(ofp,"   goto FORend_%d\n",for_label_num);
+    fprintf(ofp,"FORnext_%d:\n",for_label_num);
+}
+
 void invoke_print(struct expr_sem *expr){
     fprintf(ofp,"   invokevirtual java/io/PrintStream/print(%s)V\n",trans_type(expr->pType));
 }
