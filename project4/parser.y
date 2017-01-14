@@ -23,6 +23,7 @@ __BOOLEAN paramError;
 struct PType *funcReturn;
 __BOOLEAN semError = __FALSE;
 int inloop = 0;
+int isconst = 0;
 %}
 
 %union {
@@ -415,30 +416,31 @@ literal_list : literal_list COMMA logical_expression
              |
              ;
 
-const_decl 	: CONST scalar_type const_list SEMICOLON
+const_decl 	: CONST { isconst = 1; } scalar_type const_list SEMICOLON
 			{
+        isconst = 0;
 				struct SymNode *newNode;				
 				struct constParam *ptr;
-				for( ptr=$3; ptr!=0; ptr=(ptr->next) ){
+				for( ptr=$4; ptr!=0; ptr=(ptr->next) ){
 					if( verifyRedeclaration( symbolTable, ptr->name, scope ) == __TRUE ){//no redeclare
-						if( ptr->value->category != $2->type ){//type different
-							if( !(($2->type==FLOAT_t || $2->type == DOUBLE_t ) && ptr->value->category==INTEGER_t) ) {
-								if(!($2->type==DOUBLE_t && ptr->value->category==FLOAT_t)){	
+						if( ptr->value->category != $3->type ){//type different
+							if( !(($3->type==FLOAT_t || $3->type == DOUBLE_t ) && ptr->value->category==INTEGER_t) ) {
+								if(!($3->type==DOUBLE_t && ptr->value->category==FLOAT_t)){	
 									fprintf( stdout, "########## Error at Line#%d: const type different!! ##########\n", linenum );
 									semError = __TRUE;	
 								}
 								else{
-									newNode = createConstNode( ptr->name, scope, $2, ptr->value );
+									newNode = createConstNode( ptr->name, scope, $3, ptr->value );
 									insertTab( symbolTable, newNode );
 								}
 							}							
 							else{
-								newNode = createConstNode( ptr->name, scope, $2, ptr->value );
+								newNode = createConstNode( ptr->name, scope, $3, ptr->value );
 								insertTab( symbolTable, newNode );
 							}
 						}
 						else{
-							newNode = createConstNode( ptr->name, scope, $2, ptr->value );
+							newNode = createConstNode( ptr->name, scope, $3, ptr->value );
 							insertTab( symbolTable, newNode );
 						}
 					}
@@ -861,54 +863,64 @@ literal_const : INT_CONST
 				{
 					int tmp = $1;
 					$$ = createConstAttr( INTEGER_t, &tmp );
-          load_int(tmp);
+          if(!isconst)
+              load_int(tmp);
 				}
 			  | SUB_OP INT_CONST
 				{
 					int tmp = -$2;
 					$$ = createConstAttr( INTEGER_t, &tmp );
-          load_int(tmp);
+          if(!isconst)
+              load_int(tmp);
 				}
 			  | FLOAT_CONST
 				{
 					float tmp = $1;
 					$$ = createConstAttr( FLOAT_t, &tmp );
-          load_float(tmp);
+          printf("%f\n",tmp);
+          if(!isconst)
+              load_float(tmp);
 				}
 			  | SUB_OP FLOAT_CONST
 			    {
 					float tmp = -$2;
 					$$ = createConstAttr( FLOAT_t, &tmp );
-          load_float(tmp);
+          if(!isconst)
+              load_float(tmp);
 				}
 			  | SCIENTIFIC
 				{
 					double tmp = $1;
 					$$ = createConstAttr( DOUBLE_t, &tmp );
-          load_double(tmp);
+          if(!isconst)
+              load_double(tmp);
 				}
 			  | SUB_OP SCIENTIFIC
 				{
 					double tmp = -$2;
 					$$ = createConstAttr( DOUBLE_t, &tmp );
-          load_double(tmp);
+          if(!isconst)
+              load_double(tmp);
 				}
 			  | STR_CONST
 				{
 					$$ = createConstAttr( STRING_t, $1 );
-          load_str($1);
+          if(!isconst)
+              load_str($1);
 				}
 			  | TRUE
 				{
 					SEMTYPE tmp = __TRUE;
 					$$ = createConstAttr( BOOLEAN_t, &tmp );
-          load_int(1);
+          if(!isconst)
+              load_int(1);
 				}
 			  | FALSE
 				{
 					SEMTYPE tmp = __FALSE;
 					$$ = createConstAttr( BOOLEAN_t, &tmp );
-          load_int(0);
+          if(!isconst)
+              load_int(0);
 				}
 			  ;
 %%

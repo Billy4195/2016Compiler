@@ -46,52 +46,82 @@ void add_global_var(const char *id,struct PType *type){
 void load_var(struct SymTable *table,struct expr_sem *var){
     int target_index;
     struct SymNode *target=find_symbol(table,var->varRef->id,&target_index);
-    if(target && target->scope == 0){
-        fprintf(ofp,"   getstatic %s/%s %s\n",class_name,target->name,trans_type(target->type));
-    }else if(target){
+    if(target->category == CONSTANT_t){
         switch(target->type->type){
         case INTEGER_t:
-            fprintf(ofp,"   iload ");
-            break;
-        case BOOLEAN_t:
-            fprintf(ofp,"   iload ");
+            fprintf(ofp,"   ldc %d\n",target->attribute->constVal->value.integerVal);
             break;
         case FLOAT_t:
-            fprintf(ofp,"   fload ");
+            if(target->attribute->constVal->category == DOUBLE_t){
+                fprintf(ofp,"   ldc %lf\n",target->attribute->constVal->value.doubleVal);
+            }else{
+                fprintf(ofp,"   ldc %f\n",target->attribute->constVal->value.floatVal);
+            }
             break;
         case DOUBLE_t:
-            fprintf(ofp,"   dload ");
+            if(target->attribute->constVal->category == DOUBLE_t){
+                fprintf(ofp,"   ldc2_w %lf\n",target->attribute->constVal->value.doubleVal);
+            }else{
+                fprintf(ofp,"   ldc2_w %f\n",target->attribute->constVal->value.floatVal);
+            }
+            break;
+        case BOOLEAN_t:
+            fprintf(ofp,"   ldc %d\n",target->attribute->constVal->value.booleanVal);
+            break;
+        case STRING_t:
+            fprintf(ofp,"   \"%s\"\n",target->attribute->constVal->value.stringVal);
             break;
         }
-        fprintf(ofp,"%d\n",target_index);
     }else{
-        printf("variable %s not found\n",var->varRef->id);
+        if(target && target->scope == 0){
+            fprintf(ofp,"   getstatic %s/%s %s\n",class_name,target->name,trans_type(target->type));
+        }else if(target){
+            switch(target->type->type){
+            case INTEGER_t:
+                fprintf(ofp,"   iload ");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   iload ");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   fload ");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   dload ");
+                break;
+            }
+            fprintf(ofp,"%d\n",target_index);
+        }else{
+            printf("variable %s not found\n",var->varRef->id);
+        }
     }
 }
 
 void store_var(struct SymTable *table,char *id,struct PType *type){
     int target_index;
     struct SymNode *target=find_symbol(table,id,&target_index);
-    if(target && target->scope == 0){
-        fprintf(ofp,"   putstatic %s/%s %s\n",class_name,id,trans_type(type));
-    }else if(target){
-        switch(target->type->type){
-        case INTEGER_t:
-            fprintf(ofp,"   istore ");
-            break;
-        case BOOLEAN_t:
-            fprintf(ofp,"   istore ");
-            break;
-        case FLOAT_t:
-            fprintf(ofp,"   fstore ");
-            break;
-        case DOUBLE_t:
-            fprintf(ofp,"   dstore ");
-            break;
+    if(target->category != CONSTANT_t){
+        if(target && target->scope == 0){
+            fprintf(ofp,"   putstatic %s/%s %s\n",class_name,id,trans_type(type));
+        }else if(target){
+            switch(target->type->type){
+            case INTEGER_t:
+                fprintf(ofp,"   istore ");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   istore ");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   fstore ");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   dstore ");
+                break;
+            }
+            fprintf(ofp,"%d\n",target_index);
+        }else{
+            printf("variable %s not found\n",id);
         }
-        fprintf(ofp,"%d\n",target_index);
-    }else{
-        printf("variable %s not found\n",id);
     }
 }
 
@@ -104,7 +134,7 @@ void load_float(float f){
 }
 
 void load_double(double d){
-    fprintf(ofp,"   ldc %lf\n",d);
+    fprintf(ofp,"   ldc2_w %lf\n",d);
 }
 
 void load_str(char *str){
