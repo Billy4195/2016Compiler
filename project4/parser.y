@@ -24,7 +24,10 @@ struct PType *funcReturn;
 __BOOLEAN semError = __FALSE;
 int inloop = 0;
 int isconst = 0;
-int rel_lable_num=0;
+int rel_label_num=0;
+int if_label_num=0;
+int if_stack[100];
+int if_top=-1;
 %}
 
 %union {
@@ -545,10 +548,31 @@ simple_statement : variable_reference ASSIGN_OP logical_expression SEMICOLON
 					}
 				 ;
 
-conditional_statement : IF L_PAREN conditional_if  R_PAREN compound_statement
-					  | IF L_PAREN conditional_if  R_PAREN compound_statement
-						ELSE compound_statement
+conditional_statement : if_statement
+          {
+            if_end(if_stack[if_top]);
+            if_top--;
+          }
+					| if_statement ELSE
+          {
+            fprintf(ofp,"   goto IFnext_%d\n",if_stack[if_top]);
+            if_end(if_stack[if_top]);
+          }
+            compound_statement
+          {
+            fprintf(ofp,"IFnext_%d:\n",if_stack[if_top]);
+            if_top--;
+          }
 					  ;
+
+if_statement : IF L_PAREN conditional_if  R_PAREN
+          {
+            if_start(if_label_num);
+            if_stack[++if_top] = if_label_num;
+            if_label_num++;
+          }
+            compound_statement
+
 conditional_if : logical_expression { verifyBooleanExpr( $1, "if" ); };;					  
 
 				
@@ -712,7 +736,7 @@ relation_expression : arithmetic_expression relation_operator arithmetic_express
 					{
 						verifyRelOp( $1, $2, $3 );
 						$$ = $1;
-            relation_op($1,$2,&rel_lable_num);
+            relation_op($1,$2,&rel_label_num);
 					}
 					| arithmetic_expression { $$ = $1; }
 					;
