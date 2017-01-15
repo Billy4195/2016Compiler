@@ -28,10 +28,7 @@ int  main( int argc, char **argv )
 				fprintf( stderr, "Open file error\n" );
 				exit(-1);
 		}
-    char *outfile_name = (char*)malloc(sizeof(char)*(strlen(argv[1])+5));
-    strcpy(outfile_name,argv[1]);
-    strcat(outfile_name,".out");
-    ofp = fopen(outfile_name, "w");
+    ofp = fopen("output.j", "w");
 		yyin = fp;
 	}
 	else

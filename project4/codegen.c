@@ -234,10 +234,10 @@ void relation_op(struct expr_sem *expr,int rel_op,int *rel_label_num){
         fprintf(ofp,"   isub\n");
         break;
     case FLOAT_t:
-        fprintf(ofp,"   fsub\n");
+        fprintf(ofp,"   fcmpl\n");
         break;
     case DOUBLE_t:
-        fprintf(ofp,"   dsub\n");
+        fprintf(ofp,"   dcmpl\n");
         break;
     case BOOLEAN_t:
         fprintf(ofp,"   isub\n");
@@ -336,7 +336,7 @@ void func_invoke(struct SymTable *table,char *name,int needpop){
             cur = cur->next;
         }
         fprintf(ofp,")%s\n",trans_type(target->type));
-        if(needpop){
+        if(needpop && target->type->type != VOID_t){
             fprintf(ofp,"   pop\n");
         }
     }

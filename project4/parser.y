@@ -34,6 +34,7 @@ int for_top=-1;
 int while_label_num=0;
 int while_stack[100];
 int while_top=-1;
+int inMain=0;
 %}
 
 %union {
@@ -113,6 +114,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
             if(!strcmp($2,"main")){
               add_main();
               insert_main_param(symbolTable, scope+1);
+              inMain=1;
             }else{
               add_method($2,NULL,$1);
             }
@@ -123,6 +125,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
           if(!strcmp($2,"main")){
             add_main();
             insert_main_param(symbolTable, scope+1);
+            inMain=1;
           }else{
             add_method($2,NULL,$1);
           }
@@ -134,6 +137,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
         }
         funcReturn = 0; 
         fprintf(ofp,".end method\n");
+        inMain=0;
       }	
 		  | scalar_type ID L_PAREN parameter_list R_PAREN  
 			{				
@@ -154,6 +158,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
               if(!strcmp($2,"main")){
                 add_main();
                 insert_main_param(symbolTable, scope+1);
+                inMain=1;
               }else{
 							  insertParamIntoSymTable( symbolTable, $4, scope+1 );
                 add_method($2,$4,$1);
@@ -165,6 +170,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
             if(!strcmp($2,"main")){
               add_main();
               insert_main_param(symbolTable, scope+1);
+              inMain=1;
             }else{
 						  insertParamIntoSymTable( symbolTable, $4, scope+1 );				
               add_method($2,$4,$1);
@@ -178,6 +184,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
         }
         funcReturn = 0; 
         fprintf(ofp,".end method\n");
+        inMain=0;
       }
 		  | VOID ID L_PAREN R_PAREN 
 			{
@@ -190,6 +197,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
           if(!strcmp($2,"main")){
             add_main();
             insert_main_param(symbolTable, scope+1);
+            inMain=1;
           }else{
             struct PType *tmp_type = createPType(VOID_t);
             add_method($2,NULL,tmp_type);
@@ -201,6 +209,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
           if(!strcmp($2,"main")){
             add_main();
             insert_main_param(symbolTable, scope+1);
+            inMain=1;
           }else{
             struct PType *tmp_type = createPType(VOID_t);
             add_method($2,NULL,tmp_type);
@@ -214,6 +223,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
         }
         funcReturn = 0; 
         fprintf(ofp,".end method\n");
+        inMain=0;
       }	
 		  | VOID ID L_PAREN parameter_list R_PAREN
 			{									
@@ -234,6 +244,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
               if(!strcmp($2,"main")){
                 add_main();
                 insert_main_param(symbolTable, scope+1);
+                inMain=1;
               }else{
 							  insertParamIntoSymTable( symbolTable, $4, scope+1 );				
                 struct PType *tmp_type = createPType(VOID_t);
@@ -247,6 +258,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
             if(!strcmp($2,"main")){
               add_main();
               insert_main_param(symbolTable, scope+1);
+              inMain=1;
             }else{
 						  insertParamIntoSymTable( symbolTable, $4, scope+1 );				
               struct PType *tmp_type = createPType(VOID_t);
@@ -262,6 +274,7 @@ funct_def : scalar_type ID L_PAREN R_PAREN
         }
         funcReturn = 0; 
         fprintf(ofp,".end method\n");
+        inMain=0;
       } 
 		  ;
 
@@ -745,7 +758,11 @@ jump_statement : CONTINUE SEMICOLON
 			   | RETURN logical_expression SEMICOLON
 				{
 					verifyReturnStatement( $2, funcReturn );
-          return_op($2);
+          if(!inMain){
+              return_op($2);
+          }else{
+              fprintf(ofp,"   return\n");
+          }
 				}
 			   ;
 
@@ -801,9 +818,9 @@ logical_factor : NOT_OP logical_factor
 
 relation_expression : arithmetic_expression relation_operator arithmetic_expression
 					{
+            relation_op($1,$2,&rel_label_num);
 						verifyRelOp( $1, $2, $3 );
 						$$ = $1;
-            relation_op($1,$2,&rel_label_num);
 					}
 					| arithmetic_expression { $$ = $1; }
 					;
@@ -818,9 +835,101 @@ relation_operator : LT_OP { $$ = LT_t; }
 
 arithmetic_expression : arithmetic_expression add_op term
 			{
+        int pre1,pre2;
+        pre1 = $1->pType->type;
+        pre2 = $3->pType->type;
 				verifyArithmeticOp( $1, $2, $3 );
 				$$ = $1;
         if($1->pType->type != ERROR_t){
+          if($1->pType->type != pre1){
+            switch(pre2){
+            case INTEGER_t:
+                fprintf(ofp,"   istore 99\n");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   fstore 99\n");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   dstore 99\n");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   istore 99\n");
+                break;
+            }
+            switch(pre1){
+            case INTEGER_t:
+                fprintf(ofp,"   i2");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   f2");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   d2");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   i2");
+                break;
+            }
+            switch($1->pType->type){
+            case INTEGER_t:
+                fprintf(ofp,"i\n");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"f\n");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"d\n");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"i\n");
+                break;
+            }
+            switch(pre2){
+            case INTEGER_t:
+                fprintf(ofp,"   iload 99\n");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   fload 99\n");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   dload 99\n");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   iload 99\n");
+                break;
+            }
+
+          }else if($1->pType->type != pre2){
+            switch(pre2){
+            case INTEGER_t:
+                fprintf(ofp,"   i2");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   f2");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   d2");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   i2");
+                break;
+            }
+            switch($1->pType->type){
+            case INTEGER_t:
+                fprintf(ofp,"i\n");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"f\n");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"d\n");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"i\n");
+                break;
+            }
+             
+          }
           add_op($$,$2);
         }
 			}
@@ -834,6 +943,9 @@ add_op	: ADD_OP { $$ = ADD_t; }
 		   
 term : term mul_op factor
 		{
+      int pre1,pre2;
+      pre1 = $1->pType->type;
+      pre2 = $3->pType->type;
 			if( $2 == MOD_t ) {
 				verifyModOp( $1, $3 );
         if($1->pType->type != ERROR_t){
@@ -843,6 +955,95 @@ term : term mul_op factor
 			else {
 				verifyArithmeticOp( $1, $2, $3 );
         if($1->pType->type != ERROR_t){
+          if($1->pType->type != pre1){
+            switch(pre2){
+            case INTEGER_t:
+                fprintf(ofp,"   istore 99\n");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   fstore 99\n");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   dstore 99\n");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   istore 99\n");
+                break;
+            }
+            switch(pre1){
+            case INTEGER_t:
+                fprintf(ofp,"   i2");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   f2");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   d2");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   i2");
+                break;
+            }
+            switch($1->pType->type){
+            case INTEGER_t:
+                fprintf(ofp,"i\n");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"f\n");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"d\n");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"i\n");
+                break;
+            }
+            switch(pre2){
+            case INTEGER_t:
+                fprintf(ofp,"   iload 99\n");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   fload 99\n");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   dload 99\n");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   iload 99\n");
+                break;
+            }
+
+          }else if($1->pType->type != pre2){
+            switch(pre2){
+            case INTEGER_t:
+                fprintf(ofp,"   i2");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"   f2");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"   d2");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"   i2");
+                break;
+            }
+            switch($1->pType->type){
+            case INTEGER_t:
+                fprintf(ofp,"i\n");
+                break;
+            case FLOAT_t:
+                fprintf(ofp,"f\n");
+                break;
+            case DOUBLE_t:
+                fprintf(ofp,"d\n");
+                break;
+            case BOOLEAN_t:
+                fprintf(ofp,"i\n");
+                break;
+            }
+             
+          }
           mul_op($1,$2);          
         }
 			}
